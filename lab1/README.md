@@ -98,8 +98,6 @@ it.
 
 ```
 gcc -I ../src hello_world.c -c
-
-# Tell gcc to look 
 gcc -L src hello_world.o -o hello_world -lvaccel -ldl
 ```
 
