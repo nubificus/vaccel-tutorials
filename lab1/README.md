@@ -22,7 +22,7 @@ just the examples):
 ```
 mkdir build
 cd build
-cmake ../ -DBUILD_EXAMPLES=ON
+cmake ../
 ```
 
 Build the source:
@@ -38,33 +38,86 @@ ls src
 CMakeFiles  cmake_install.cmake  libvaccel.so  Makefile  vaccel.pc
 ```
 
-whereas under `examples` you should find the built examples of the vAccel
-runtime:
+### vAccel Hello World!
+
+The `Hello, world!` example of vAccel is a simple application that calls the
+`vaccel_noop` function of the [vAccel API](https://docs.vaccel.org/devguide/api).
+
+As you have probably guessed the `vaccel_noop` function is a no-op, it does not
+require any actual acecleration, but it's useful for demonstration and debugging
+purposes, so we will be using it along the course of this and following labs.
+
+Here is the code which you can also find in the
+[noop](https://github.com/cloudkernels/vaccelrt/blob/master/examples/noop.c)
+example of the vAccelRT repo:
 
 ```
-ls examples
-classify  classify_generic  CMakeFiles  cmake_install.cmake  exec  exec_generic  Makefile  noop
-```
+#include <stdlib.h>
+#include <stdio.h>
 
-### Execute `noop`
+#include <vaccel.h>
 
-and execute the [noop example](https://github.com/cloudkernels/vaccelrt/blob/master/examples/noop.c) which essentially does the following:
-```
+int main()
+{
+	int ret;
+	struct vaccel_session sess;
+
 	ret = vaccel_sess_init(&sess, 0);
+	if (ret != VACCEL_OK) {
+		fprintf(stderr, "Could not initialize session\n");
+		return 1;
+	}
+
+	printf("Initialized session with id: %u\n", sess.session_id);
+
 	ret = vaccel_noop(&sess);
-	ret = vaccel_sess_free(&sess);
+	if (ret)
+		fprintf(stderr, "Could not run op: %d\n", ret);
+
+	if (vaccel_sess_free(&sess) != VACCEL_OK) {
+		fprintf(stderr, "Could not clear session\n");
+		return 1;
+	}
+
+	return ret;
+}
 ```
 
-The output is a bit confusing at first:
+All vAccel operations are performed in the context of a "user" session, so the
+first thing that the program does is creating a new `vaccel_session`.
+Next, it performs the actual operation `vaccel_noop` and closes the session.
+
+#### Building application
+
+In order to build our "Hello, world" example we need to link it against
+`libvaccel` which depends on `libdl`.
+
+We put the above snippet in a file named `hello_world.c`, compile it and link
+it.
 
 ```
-$ ./examples/noop 
+gcc -I ../src hello_world.c -c
+
+# Tell gcc to look 
+gcc -L src hello_world.o -o hello_world -lvaccel -ldl
+```
+
+The `-I` flag above tells gcc to look for vaccel.h header file under the src
+directory of vaccelrt, whereas the `-L` flag it tells it to look for
+`libvaccel.so` under `src` in the build directory.
+
+#### Running the application
+
+Let's run our 'Hello, World' application:
+
+```
+LD_LIBRARY_PATH=./src ./hello_world
 Initialized session with id: 1
 Could not run op: 95
 ```
 
-To enable debug, we need to set the environment variable `VACCEL_DEBUG_LEVEL`.
-Enabling debug messages sheds a bit of light:
+Not what we expected. Let's enable vAccel runtime debugging, by setting the
+`VACCEL_DEBUG_LEVEL` environment variable, to shed a bit of light:
 
 ```
 $ VACCEL_DEBUG_LEVEL=4 ./examples/noop 
@@ -79,16 +132,21 @@ Could not run op: 95
 2021.04.09-09:09:03.39 - <debug> Cleaning up plugins
 ```
 
-We can see that initialization works, the vAccel session is created but the
-system fails to find a relevant plugin that implements the operation we asked
-for: `noop`. 
+Ok better!
+
+What we see first here is the vAccel runtime initializating. This happens
+automatically during application loading. Next, we see the successful
+creation of a new vAccel session with id `1`. Finally, upon call of
+`vaccel_noop` from our program, the runtime looks for a plugin which implements
+the operation and is unable to find one, so the call fails. Finally, the
+vAccel session `1` is freed and the execution exits.
 
 ### Build a `noop` plugin
 
 Let's go back and build a plugin that implements this operation, `noop`:
 
 ```
-cmake ../ -DBUILD_EXAMPLES=ON -DBUILD_PLUGIN_NOOP=ON
+cmake ../ -DBUILD_PLUGIN_NOOP=ON
 make
 ```
 
@@ -97,7 +155,7 @@ variable `VACCEL_BACKENDS`. When we execute the example and specify the
 plugin to use we get the following:
 
 ```
-$ VACCEL_DEBUG_LEVEL=4 VACCEL_BACKENDS=./plugins/noop/libvaccel-noop.so ./examples/noop
+$ VACCEL_DEBUG_LEVEL=4 VACCEL_BACKENDS=./plugins/noop/libvaccel-noop.so ./hello_world
 2021.04.09-09:10:03.48 - <debug> Initializing vAccel
 2021.04.09-09:10:03.48 - <debug> Registered plugin noop
 2021.04.09-09:10:03.48 - <debug> Registered function noop from plugin noop
@@ -115,7 +173,7 @@ Calling no-op for session 1
 
 ### Takeaway
 
-We have built the core runtime system, and we used the noop example to see what
-happens when no plugins are included. We then built a plugin that implements
-this operation (`noop`) and saw that the function succeeds when a relevant
-implementation of the operation exists.
+We saw how we build the vAccel runtime system. We then learnt what a vAccel
+Hello, World application looks like and how we build it. Finally, we saw how
+he build one of the available vAccel runtime plugins and use it to execute our
+application.
