@@ -7,8 +7,7 @@ we saw how to write, build and execute a simple vAccel application calling the
 In this lab, we will go through the process of writing our own vAccel plugin
 that implements the `vaccel_noop` that we used in our Hello, World example in
 [lab1](https://github.com/nubificus/vaccel-tutorials/blob/main/lab1/README.md).
-
-The purpose of this tutorial is to showcase the rationale of the plugin/backend
+The purpose of this exercise is to showcase the rationale of the plugin/backend
 system and the simplicity of adding a new plugin to vAccel.
 
 To implement a vAccel plugin, all we need to do is add the implementation of
@@ -18,13 +17,10 @@ To start, we assume we have built and familiarized ourselves with vAccelRT
 using
 [lab1](https://github.com/nubificus/vaccel-tutorials/blob/main/lab1/README.md).
 
-We will call our plugin `helloworld` and we will use the existing `noop` plugin
-as a skeleton.
 
 We will use the `noop` plugin as a skeleton for our new plugin which we will
-call `helloworld`. 
-
-For simplicity we copy the `noop` plugin directory structure to a new directory:
+call `helloworld`. For simplicity we copy the `noop` plugin directory structure
+to a new directory:
 
 ```
 cp -avf plugins/noop plugins/helloworld
