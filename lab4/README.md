@@ -96,7 +96,7 @@ this, we need to tweak the build system of our example, and slightly change the
 code.
 
 The patch needed for `opencl_examples` is provided
-[here](https://github.com/nubificus/opencl_examples/blob/599c59e30d7fb74ff706b76fa6399e8e59f11112/vector_add/vector_add.cpp). 
+[here](https://github.com/nubificus/vaccel-tutorial-code/blob/a6b10c7539d8b6158e7eea81760e95c798d10715/app/0001-Libify-vector_add.patch). 
 
 In the opencl_examples directory simple run:
 
