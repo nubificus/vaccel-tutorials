@@ -77,9 +77,9 @@ Using device: Intel(R) Graphics [0x9b41]
 If we examine the
 [code](https://github.com/nubificus/opencl_examples/blob/599c59e30d7fb74ff706b76fa6399e8e59f11112/vector_add/vector_add.cpp)
 we'll see it is a simple [vector add implementation in
-OpenCL](https://github.com/nubificus/opencl_examples/blob/599c59e30d7fb74ff706b76fa6399e8e59f11112/vector_add/vector_add.cpp)
+OpenCL](https://github.com/nubificus/opencl_examples/blob/599c59e30d7fb74ff706b76fa6399e8e59f11112/vector_add/vector_add.cpp#48)
 with the relevant [host
-code](https://github.com/nubificus/opencl_examples/blob/599c59e30d7fb74ff706b76fa6399e8e59f11112/vector_add/vector_add.cpp).
+code](https://github.com/nubificus/opencl_examples/blob/599c59e30d7fb74ff706b76fa6399e8e59f11112/vector_add/vector_add.cpp#84).
 
 So, in order to use vAccel to execute this operation, we need to do two things:
 
