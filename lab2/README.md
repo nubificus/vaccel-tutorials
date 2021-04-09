@@ -108,7 +108,7 @@ option(BUILD_PLUGIN_HELLOWORLD "Build the hello-world debugging plugin" OFF)
 
 Now we can build our new plugin, by specifying the new option we just added:
 
-```sh
+```
 cd build
 cmake ../ -DBUILD_PLUGIN_HELLOWORLD=ON
 make
@@ -117,7 +117,7 @@ make
 We see that a new plugin is now available, `libvaccel-helloworld.so`. Lets use this
 one instead of the `noop` one!
 
-```sh
+```
 $ LD_LIBRARY_PATH=src VACCEL_DEBUG_LEVEL=4 VACCEL_BACKENDS=./plugins/helloworld/libvaccel-helloworld.so ./hello_world
 2021.04.09-12:40:45.86 - <debug> Initializing vAccel
 2021.04.09-12:40:45.86 - <debug> Registered plugin helloworld
