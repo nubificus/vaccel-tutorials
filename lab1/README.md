@@ -1,7 +1,7 @@
 # lab1: build vAccel & run a simple operation
 
-In this short tutorial, we will go through the build process of vAccel and 
-familiarize ourselves with running a simple operation. 
+In this short tutorial, we will go through the build process of the vAccel
+runtime and how you can run the `hello-world` vAccel application.
 
 ## Building vAccelRT
 
@@ -10,14 +10,8 @@ familiarize ourselves with running a simple operation.
 Clone the vAcceRT repository using the following command:
 
 ```
-git clone https://github.com/cloudkernels/vaccelrt
-```
-
-Enter the path and fetch all submodules:
-
-```
+git clone --recursive https://github.com/cloudkernels/vaccelrt
 cd vaccelrt
-git submodule update --init
 ```
 
 ### Build the core runtime
@@ -35,6 +29,13 @@ Build the source:
 
 ```
 make
+```
+
+You should find the vAccel runtime library under `src`
+
+```
+ls src
+CMakeFiles  cmake_install.cmake  libvaccel.so  Makefile  vaccel.pc
 ```
 
 ### Execute `noop`
