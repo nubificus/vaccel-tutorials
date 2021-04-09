@@ -7,6 +7,10 @@ with the vAccel framework.
 instructions on how to build vAccelRT and execute a simple operation.
 
 [lab2](https://github.com/nubificus/vaccel-tutorials/tree/main/lab2) describes
+the process to add a new plugin to vAccel that implements a known, frontend
+operation exposed to the upper layer framework of vAccelRT.
+
+[lab3](https://github.com/nubificus/vaccel-tutorials/tree/main/lab2) describes
 the process to add a new function to vAccel as a plugin and expose it to the
 upper layer framework as a generic operation of vAccelRT.
 
