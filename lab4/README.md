@@ -95,7 +95,8 @@ expose the operation as a function prototype through a shared library. To do
 this, we need to tweak the build system of our example, and slightly change the
 code.
 
-The patch needed for opencl_examples is provided [here](https://github.com/nubificus/opencl_examples/blob/599c59e30d7fb74ff706b76fa6399e8e59f11112/vector_add/vector_add.cpp). 
+The patch needed for `opencl_examples` is provided
+[here](https://github.com/nubificus/opencl_examples/blob/599c59e30d7fb74ff706b76fa6399e8e59f11112/vector_add/vector_add.cpp). 
 
 In the opencl_examples directory simple run:
 
