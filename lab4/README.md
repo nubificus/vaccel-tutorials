@@ -167,6 +167,21 @@ Essentially, what the code does, is the following:
 - [call `vaccel_exec` with these arguments](https://github.com/nubificus/vaccel-tutorial-code/blob/4b91749bbe756401c5d21f89a4ce4aaa50d43423/app/wrapper_exec.c#L25)
 - [finalize the session](https://github.com/nubificus/vaccel-tutorial-code/blob/4b91749bbe756401c5d21f89a4ce4aaa50d43423/app/wrapper_exec.c#L32)
 
+To build the library and the wrapper program we need to have a built of the
+`vaccelrt` source tree. For more info have a look at the
+[lab1](https://github.com/nubificus/vaccel-tutorials/tree/main/lab1) and
+[lab2](https://github.com/nubificus/vaccel-tutorials/tree/main/lab2) tutorials
+in this repo.
+
+In short:
+```
+cd ../vaccelrt
+mkdir -p build
+cd build
+cmake ../ -DBUILD_PLUGIN_EXEC=ON
+make
+cd ../app
+```
 
 We build the library:
 
@@ -190,21 +205,7 @@ LD_LIBRARY_PATH=. ./wrapper-vaccel
 
 This means that we need to tell the loader where to find libvaccel.so.
 Additionally, we need to specify a vAccel backend via the `VACCEL_BACKENDS`
-enviromental variable. For more info have a look at the
-[lab1](https://github.com/nubificus/vaccel-tutorials/tree/main/lab1) and
-[lab2](https://github.com/nubificus/vaccel-tutorials/tree/main/lab2) tutorials
-in this repo.
-
-In short:
-```
-cd ../vaccelrt
-mkdir -p build
-cd build
-cmake ../ -DBUILD_PLUGIN_EXEC=ON
-make
-cd ../app
-```
-
+enviromental variable. 
 After we've built vAccel and the vAccel exec plugin, we can run our wrapper:
 
 ```
