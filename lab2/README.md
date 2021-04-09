@@ -104,6 +104,7 @@ option(BUILD_PLUGIN_MYNOOP "Build the mynoop debugging plugin" OFF)
 Now we can build our new plugin, by specifying the new option we just added:
 
 ```
+cd build
 cmake ../ -DBUILD_EXAMPLES=ON -DBUILD_PLUGIN_MYNOOP=ON
 make
 ```
