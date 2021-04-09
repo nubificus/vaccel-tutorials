@@ -62,9 +62,9 @@ static int helloworld(struct vaccel_session *session)
 {
 	fprintf(stdout, "Calling vaccel-helloworld for session %u\n", session->session_id);
 
-	printf("_________________________________________________________\n\n");
+	printf("_______________________________________________________________\n\n");
 	printf("This is the helloworld plugin, implementing the NOOP operation!\n");
-	printf("=========================================================\n\n");
+	printf("===============================================================\n\n");
 
 	return VACCEL_OK;
 }
@@ -95,22 +95,22 @@ to build the plugin along with the rest of the vAccelRT code.
 We add the following to `plugins/CMakeLists.txt`:
 
 ```
-if (BUILD_PLUGIN_MYNOOP)
+if (BUILD_PLUGIN_HELLOWORLD)
         add_subdirectory(helloworld)
-endif(BUILD_PLUGIN_MYNOOP)
+endif(BUILD_PLUGIN_HELLOWORLD)
 ```
 
 and to `CMakeLists.txt`:
 
 ```
-option(BUILD_PLUGIN_MYNOOP "Build the helloworld debugging plugin" OFF)
+option(BUILD_PLUGIN_HELLOWORLD "Build the hello-world debugging plugin" OFF)
 ```
 
 Now we can build our new plugin, by specifying the new option we just added:
 
 ```
 cd build
-cmake ../ -DBUILD_EXAMPLES=ON -DBUILD_PLUGIN_MYNOOP=ON
+cmake ../ -DBUILD_PLUGIN_HELLOWORLD=ON
 make
 ```
 
@@ -118,10 +118,10 @@ We see that a new plugin is now available, `libvaccel-helloworld.so`. Lets use t
 one instead of the `noop` one!
 
 ```
-$ VACCEL_DEBUG_LEVEL=4 VACCEL_BACKENDS=./plugins/helloworld/libvaccel-helloworld.so ./examples/noop
+$ VACCEL_DEBUG_LEVEL=4 VACCEL_BACKENDS=./plugins/helloworld/libvaccel-helloworld.so ./hello_world
 2021.04.09-09:27:42.33 - <debug> Initializing vAccel
 2021.04.09-09:27:42.33 - <debug> Registered plugin noop
-2021.04.09-09:27:42.33 - <debug> Registered function noop from plugin noop
+2021.04.09-09:27:42.33 - <debug> Registered function noop from plugin helloworld
 2021.04.09-09:27:42.33 - <debug> Loaded plugin noop from ./plugins/helloworld/libvaccel-helloworld.so
 2021.04.09-09:27:42.33 - <debug> session:1 New session
 Initialized session with id: 1
