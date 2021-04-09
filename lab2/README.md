@@ -1,7 +1,11 @@
-# Add a plugin
+# lab2: how to write a vAccel plugin
 
-In this short tutorial, we will go through adding a simple plugin to vAccel
-that implements the `noop` operation we saw at
+In [lab1](https://github.com/nubificus/vaccel-tutorials/blob/main/lab1/README.md)
+we saw how to write, build and execute a simple vAccel application calling the
+`vaccel_noop` function which is implemented by the `noop` plugin.
+
+In this lab, we will go through the process of writing our own vAccel plugin
+that implements the `vaccel_noop` that we used in our Hello, World example in
 [lab1](https://github.com/nubificus/vaccel-tutorials/blob/main/lab1/README.md).
 
 The purpose of this tutorial is to showcase the rationale of the plugin/backend
@@ -9,41 +13,46 @@ system and the simplicity of adding a new plugin to vAccel.
 
 To implement a vAccel plugin, all we need to do is add the implementation of
 the relevant frontend function and register it to the vAccel plugin subsystem.
-We can use the `noop` plugin as reference.
 
 To start, we assume we have built and familiarized ourselves with vAccelRT
 using
 [lab1](https://github.com/nubificus/vaccel-tutorials/blob/main/lab1/README.md).
-Then, we go back to the vAccelRT base source dir and copy the `noop` plugin dir
-contents to a new directory, called `mynoop`.
+
+We will call our plugin `helloworld` and we will use the existing `noop` plugin
+as a skeleton.
+
+We will use the `noop` plugin as a skeleton for our new plugin which we will
+call `helloworld`. 
+
+For simplicity we copy the `noop` plugin directory structure to a new directory:
 
 ```
-cp -avf plugins/noop plugins/mynoop
+cp -avf plugins/noop plugins/helloworld
 ```
 
-we replace `noop` with the name of our choosing (`mynoop`) so we come up with
+we replace `noop` with the name of our choosing (`helloworld`) so we come up with
 the following directory structure:
 
 ```
-plugins/mynoop
+plugins/helloworld
 ├── CMakeLists.txt
 └── vaccel.c
 ```
 
-We need to change the contents of `plugins/mynoop/CMakeLists.txt` to reflect
-the `noop` to `mynoop` change:
+We need to change the contents of `plugins/helloworld/CMakeLists.txt` to reflect
+the `noop` to `helloworld` change:
 
 ```
 set(include_dirs ${CMAKE_SOURCE_DIR}/src)
 set(SOURCES vaccel.c ${include_dirs}/vaccel.h ${include_dirs}/plugin.h)
 
-add_library(vaccel-mynoop SHARED ${SOURCES})
-target_include_directories(vaccel-mynoop PRIVATE ${include_dirs})
+add_library(vaccel-helloworld SHARED ${SOURCES})
+target_include_directories(vaccel-helloworld PRIVATE ${include_dirs})
 
-target_link_libraries(vaccel-mynoop PRIVATE vector_add OpenCL)
+target_link_libraries(vaccel-helloworld PRIVATE vector_add OpenCL)
 
 # Setup make install
-install(TARGETS vaccel-mynoop DESTINATION "${lib_path}")
+install(TARGETS vaccel-helloworld DESTINATION "${lib_path}")
 ```
 
 Similarly, we replace the plugin implementation with our own in `vaccel.c`,
@@ -53,18 +62,18 @@ adding a simple message:
 #include <stdio.h>
 #include <plugin.h>
 
-static int mynoop(struct vaccel_session *session)
+static int helloworld(struct vaccel_session *session)
 {
-	fprintf(stdout, "Calling myno-op for session %u\n", session->session_id);
+	fprintf(stdout, "Calling vaccel-helloworld for session %u\n", session->session_id);
 
 	printf("_________________________________________________________\n\n");
-	printf("This is the mynoop plugin, implementing the NOOP operation!\n");
+	printf("This is the helloworld plugin, implementing the NOOP operation!\n");
 	printf("=========================================================\n\n");
 
 	return VACCEL_OK;
 }
 
-struct vaccel_op op = VACCEL_OP_INIT(op, VACCEL_NO_OP, mynoop);
+struct vaccel_op op = VACCEL_OP_INIT(op, VACCEL_NO_OP, helloworld);
 
 static int init(void)
 {
@@ -77,7 +86,7 @@ static int fini(void)
 }
 
 VACCEL_MODULE(
-	.name = "mynoop",
+	.name = "helloworld",
 	.version = "0.1",
 	.init = init,
 	.fini = fini
@@ -91,14 +100,14 @@ We add the following to `plugins/CMakeLists.txt`:
 
 ```
 if (BUILD_PLUGIN_MYNOOP)
-        add_subdirectory(mynoop)
+        add_subdirectory(helloworld)
 endif(BUILD_PLUGIN_MYNOOP)
 ```
 
 and to `CMakeLists.txt`:
 
 ```
-option(BUILD_PLUGIN_MYNOOP "Build the mynoop debugging plugin" OFF)
+option(BUILD_PLUGIN_MYNOOP "Build the helloworld debugging plugin" OFF)
 ```
 
 Now we can build our new plugin, by specifying the new option we just added:
@@ -109,15 +118,15 @@ cmake ../ -DBUILD_EXAMPLES=ON -DBUILD_PLUGIN_MYNOOP=ON
 make
 ```
 
-We see that a new plugin is now available, `libvaccel-mynoop.so`. Lets use this
+We see that a new plugin is now available, `libvaccel-helloworld.so`. Lets use this
 one instead of the `noop` one!
 
 ```
-$ VACCEL_DEBUG_LEVEL=4 VACCEL_BACKENDS=./plugins/mynoop/libvaccel-mynoop.so ./examples/noop
+$ VACCEL_DEBUG_LEVEL=4 VACCEL_BACKENDS=./plugins/helloworld/libvaccel-helloworld.so ./examples/noop
 2021.04.09-09:27:42.33 - <debug> Initializing vAccel
 2021.04.09-09:27:42.33 - <debug> Registered plugin noop
 2021.04.09-09:27:42.33 - <debug> Registered function noop from plugin noop
-2021.04.09-09:27:42.33 - <debug> Loaded plugin noop from ./plugins/mynoop/libvaccel-mynoop.so
+2021.04.09-09:27:42.33 - <debug> Loaded plugin noop from ./plugins/helloworld/libvaccel-helloworld.so
 2021.04.09-09:27:42.33 - <debug> session:1 New session
 Initialized session with id: 1
 2021.04.09-09:27:42.33 - <debug> session:1 Looking for plugin implementing noop
@@ -125,7 +134,7 @@ Initialized session with id: 1
 Calling myno-op for session 1
 _________________________________________________________
 
-This is the mynoop plugin, implementing the NOOP operation!
+This is the helloworld plugin, implementing the NOOP operation!
 =========================================================
 
 2021.04.09-09:27:42.33 - <debug> session:1 Free session
