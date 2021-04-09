@@ -53,7 +53,7 @@ adding a simple message:
 #include <stdio.h>
 #include <plugin.h>
 
-static int noop(struct vaccel_session *session)
+static int mynoop(struct vaccel_session *session)
 {
 	fprintf(stdout, "Calling myno-op for session %u\n", session->session_id);
 
@@ -64,7 +64,7 @@ static int noop(struct vaccel_session *session)
 	return VACCEL_OK;
 }
 
-struct vaccel_op op = VACCEL_OP_INIT(op, VACCEL_NO_OP, noop);
+struct vaccel_op op = VACCEL_OP_INIT(op, VACCEL_NO_OP, mynoop);
 
 static int init(void)
 {
@@ -77,7 +77,7 @@ static int fini(void)
 }
 
 VACCEL_MODULE(
-	.name = "noop",
+	.name = "mynoop",
 	.version = "0.1",
 	.init = init,
 	.fini = fini
