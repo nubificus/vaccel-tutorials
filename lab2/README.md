@@ -30,7 +30,8 @@ plugins/mynoop
 └── vaccel.c
 ```
 
-and the following contents for CMakeLists.txt:
+We need to change the contents of `plugins/mynoop/CMakeLists.txt` to reflect
+the `noop` to `mynoop` change:
 
 ```
 set(include_dirs ${CMAKE_SOURCE_DIR}/src)
