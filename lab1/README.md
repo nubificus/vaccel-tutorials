@@ -52,7 +52,7 @@ Here is the code which you can also find in the
 [noop](https://github.com/cloudkernels/vaccelrt/blob/master/examples/noop.c)
 example of the vAccelRT repo:
 
-```
+```C
 #include <stdlib.h>
 #include <stdio.h>
 
