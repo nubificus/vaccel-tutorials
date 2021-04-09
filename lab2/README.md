@@ -46,7 +46,8 @@ target_link_libraries(vaccel-mynoop PRIVATE vector_add OpenCL)
 install(TARGETS vaccel-mynoop DESTINATION "${lib_path}")
 ```
 
-and vaccel.c
+Similarly, we replace the plugin implementation with our own in `vaccel.c`,
+adding a simple message:
 
 ```
 #include <stdio.h>
