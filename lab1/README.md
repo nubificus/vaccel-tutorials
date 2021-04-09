@@ -38,6 +38,14 @@ ls src
 CMakeFiles  cmake_install.cmake  libvaccel.so  Makefile  vaccel.pc
 ```
 
+whereas under `examples` you should find the built examples of the vAccel
+runtime:
+
+```
+ls examples
+classify  classify_generic  CMakeFiles  cmake_install.cmake  exec  exec_generic  Makefile  noop
+```
+
 ### Execute `noop`
 
 and execute the [noop example](https://github.com/cloudkernels/vaccelrt/blob/master/examples/noop.c) which essentially does the following:
