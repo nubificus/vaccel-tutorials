@@ -1,7 +1,8 @@
 # lab1: build vAccel & run a simple operation
 
 In this short tutorial, we will go through the build process of the vAccel
-runtime and how you can run the `hello-world` vAccel application.
+runtime and how you can run the `hello-world` vAccel application using one
+of the available back-end plugins.
 
 ## Building vAccelRT
 
@@ -38,7 +39,7 @@ ls src
 CMakeFiles  cmake_install.cmake  libvaccel.so  Makefile  vaccel.pc
 ```
 
-### vAccel Hello World!
+## vAccel Hello World!
 
 The `Hello, world!` example of vAccel is a simple application that calls the
 `vaccel_noop` function of the [vAccel API](https://docs.vaccel.org/devguide/api).
@@ -87,7 +88,7 @@ All vAccel operations are performed in the context of a "user" session, so the
 first thing that the program does is creating a new `vaccel_session`.
 Next, it performs the actual operation `vaccel_noop` and closes the session.
 
-#### Building application
+### Building application
 
 In order to build our "Hello, world" example we need to link it against
 `libvaccel` which depends on `libdl`.
@@ -106,7 +107,7 @@ The `-I` flag above tells gcc to look for vaccel.h header file under the src
 directory of vaccelrt, whereas the `-L` flag it tells it to look for
 `libvaccel.so` under `src` in the build directory.
 
-#### Running the application
+### Running the application
 
 Let's run our 'Hello, World' application:
 
@@ -171,7 +172,7 @@ Calling no-op for session 1
 2021.04.09-09:10:03.48 - <debug> Unregistered plugin noop
 ```
 
-### Takeaway
+## Takeaway
 
 We saw how we build the vAccel runtime system. We then learnt what a vAccel
 Hello, World application looks like and how we build it. Finally, we saw how
