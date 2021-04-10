@@ -125,7 +125,7 @@ Not what we expected. Let's enable vAccel runtime debugging, by setting the
 `VACCEL_DEBUG_LEVEL` environment variable, to shed a bit of light:
 
 ```
-$ VACCEL_DEBUG_LEVEL=4 ./examples/noop 
+$ VACCEL_DEBUG_LEVEL=4 ./hello_world
 2021.04.09-09:09:03.39 - <debug> Initializing vAccel
 2021.04.09-09:09:03.39 - <debug> session:1 New session
 Initialized session with id: 1
