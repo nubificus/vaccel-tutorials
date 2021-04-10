@@ -35,8 +35,12 @@ make
 You should find the vAccel runtime library under `src`
 
 ```
-ls src
-CMakeFiles  cmake_install.cmake  libvaccel.so  Makefile  vaccel.pc
+ vaccelrt/build $ tree -f src/
+src
+├── [snipped]
+├── src/libvaccel.so
+├── src/Makefile
+└── src/vaccel.pc
 ```
 
 ## vAccel Hello World!
@@ -110,7 +114,7 @@ directory of vaccelrt, whereas the `-L` flag it tells it to look for
 Let's run our 'Hello, World' application:
 
 ```
-LD_LIBRARY_PATH=./src ./hello_world
+$ LD_LIBRARY_PATH=./src ./hello_world
 Initialized session with id: 1
 Could not run op: 95
 ```
@@ -133,7 +137,7 @@ Could not run op: 95
 
 Ok better!
 
-What we see first here is the vAccel runtime initializating. This happens
+What we see first here is the vAccel runtime initializing. This happens
 automatically during application loading. Next, we see the successful
 creation of a new vAccel session with id `1`. Finally, upon call of
 `vaccel_noop` from our program, the runtime looks for a plugin which implements

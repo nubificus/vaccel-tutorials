@@ -4,7 +4,7 @@ This repo contains a number of lab exercises that assist in the familiarization
 with the vAccel framework.
 
 [lab1](https://github.com/nubificus/vaccel-tutorials/tree/main/lab1) contains
-instructions on how to build vAccelRT and execute a the vAccel `hello-world`.
+instructions on how to build vAccelRT and execute the vAccel `hello-world`.
 
 [lab2](https://github.com/nubificus/vaccel-tutorials/tree/main/lab2) describes
 the process to add a new plugin to vAccel that implements a known, frontend
