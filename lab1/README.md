@@ -35,12 +35,14 @@ make
 You should find the vAccel runtime library under `src`
 
 ```
- vaccelrt/build $ tree -f src/
-src
-├── [snipped]
-├── src/libvaccel.so
-├── src/Makefile
-└── src/vaccel.pc
+$ tree -L 1 src/
+src/
+├── CMakeFiles
+├── cmake_install.cmake
+├── libvaccel.so
+├── Makefile
+└── vaccel.pc
+
 ```
 
 ## vAccel Hello World!
