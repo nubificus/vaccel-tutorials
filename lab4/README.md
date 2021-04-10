@@ -1,346 +1,218 @@
-# lab4: use vAccel to run your code
+# lab4: use vAccel from a VM
 
-## Introduction
+In the previous lab exercises we went through the essential steps to build
+([lab1](https://github.com/nubificus/vaccel-tutorials/tree/main/lab1)), tailor
+([lab2](https://github.com/nubificus/vaccel-tutorials/tree/main/lab2)) and use
+([lab3](https://github.com/nubificus/vaccel-tutorials/tree/main/lab3)) the
+vAccel framework.
 
-So let's think what vAccel, fundamentally, is useful for. vAccel exposes an API
-for user applications. The functions of this API are ultimately implemented from
-plugins. That allows us to write applications that are independent of the actual
-implementation of certain functions and be more portable.
+In this lab, we go through the process of calling a vAccel operation in a
+lightweight Virtual Machine and running the code in the Host. To achive this,
+we need some kind of transport layer that forwards the relevant calls from the
+VM to the Host where the actual execution is going to be triggered. vAccel
+supports a number of ways to do this; in this lab we are going to use vAccel's
+`virtio` plugin.
 
-Imagine an application that uses the `vaccel_image_classification` API to
-perform image inference. You can run this application on a machine with Nvidia
-GPU using the [jetson](https://github.com/cloudkernels/vaccelrt/tree/master/plugins/jetson_inference)
-plugin of vAccel runtime. If, tomorrow, you want to use a different device
-for running the operation, you just execute the *same* application with a
-plugin for that device.
+The `virtio` plugin requires support from the VMM. We have ported the necessary
+functionality to two popular VMMs: QEMU/KVM and AWS Firecracker.
 
-Now imagine you want to do something like that with a function that is not
-supported by the vAccel API. You could go implement it in the API, but for the
-cases you don't want to do that vAccel provides you with the `vaccel_exec` call.
+Lets go through the process of booting a Firecracker VM and use vAccel from the
+guest to do the simple vector add operation we saw in
+[lab4](https://github.com/nubificus/vaccel-tutorials/tree/main/lab4). We assume
+we've completed lab4 and we are in the [helper
+repo](https://github.com/nubificus/vaccel-tutorials-code) base directory.
 
-`vaccel_exec` receives as an argument a binary, a symbol name and a set of
-arguments and it executes that symbol passing it the arguments as is.
+## Booting a VM
 
-That allows you to change your implementation, i.e. the binary you pass to
-`vaccel_exec` without changing the final application, i.e. the one calling
-`vaccel_exec`.
-
-Moreover, you can execute your application inside a VM transparently because
-the `virtio` plugin implements `vaccel_exec` for you, thus allowing you to run
-you code as if you were on the host.
-
-In this lab, we will go through using the vAccel `exec` operation to
-execute an arbitrary piece of code. The process is straightforward: we build a
-simple library that wraps the call to our function into a vAccel `exec`
-operation and implement the respective wrapper to call the implementation of
-our function via the `exec` plugin.
-
-## Our code
-
-Suppose we have some code written for a project and we want to integrate it in
-vAccel, in order to expose the functionality to users without them caring about
-the underlying implementation. 
-
-In short, lets say we have a `vector add` operation, in `OpenCL`. A first-page
-google result for `opencl example vector add` showed the following github repo:
-`https://github.com/mantiuk/opencl_examples` which we forked at
-`https://github.com/nubificus/opencl_examples`.
-
-To build, you will need a working OpenCL installation. On a debian-based OS its
-more than enough to do a simple: `apt-get install libpocl-dev`.
-
-For this tutorial we will use a helper repo with the reference code. Lets clone
-it and start:
+To boot a VM we need to get the VMM binary, a linux kernel and a rootfs image.
+Additionally the VMM needs to support the `virtio` plugin of vAccel. To
+facilitate the process we have the necessary files bundled in a [github
+repo](https://github.com/nubificus/fc-x86-guest-build/releases/latest). Go
+ahead and fetch them locally:
 
 ```
-git clone https://github.com/nubificus/vaccel-tutorial-code --recursive
-cd vaccel-tutorial-code
-```
-
-The directory tree is the following:
-
-```
-$ tree -d .
-.
-├── app
-│   └── opencl_examples
-└── vaccelrt
+# get latest release
+FC_RELEASE=`curl --silent "https://api.github.com/repos/cloudkernels/firecracker/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/'`
+ASSETS_RELEASE=`curl --silent "https://api.github.com/repos/nubificus/fc-x86-guest-build/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/'`
+wget https://github.com/cloudkernels/firecracker/releases/download/$FC_RELEASE/firecracker-vaccel
+wget https://github.com/nubificus/fc-x86-guest-build/releases/download/$ASSETS_RELEASE/rootfs.img
+wget https://github.com/nubificus/fc-x86-guest-build/releases/download/$REL/vmlinux
 
 ```
 
-In the `app` subfolder, we've added a git submodule pointing to the example
-code mentioned earlier (`opencl_examples`). Lets go to the code and build it:
+The first thing to do is boot the VM with vAccel enabled. To be able to share
+files with the VM, we'll use the network. The config file specifies a tap
+interface which will be created when the VM starts, so let's create a tap
+interface with the same name and give it an IP address:
 
 ```
-cd app/opencl_examples
-mkdir build
-cd build
-cmake ../
-make
+sudo ip tuntap add dev tapFc mode tap
+sudo ip addr add dev tapFc 172.42.0.1/24
+sudo ip link set dev tapFc up
 ```
 
-There should be two executables lying around in each of the example folders:
+On a new terminal, we launch our firecracker VM with the
+following command:
 
 ```
-$ find . -path ./CMakeFiles -prune -o -type f -executable
-./list_platforms/ocl_list_platforms
-./vector_add/ocl_vector_add
-
+sudo \
+VACCEL_BACKENDS=vaccelrt/build/plugins/noop/libvaccel-noop.so \
+LD_LIBRARY_PATH=vaccelrt/build/src/  \
+./firecracker-vaccel --api-sock fc.sock --config-file config_virtio_accel.json --seccomp-level 0
 ```
 
-The part we're interested in is the `vector add` executable, so lets run it!
+We are using `noop plugin` and have enabled full debug. The VM is on
+`172.42.0.2`.  On the VM's console terminal, we're presented with a login
+prompt, just enter `root` as the user with no password.
+
+On our original terminal we can login to the VM via ssh (no password/auth
+required). Let's try that:
 
 ```
-$ ./vector_add/ocl_vector_add 
-Using platform: Intel(R) OpenCL HD Graphics
-Using device: Intel(R) Graphics [0x9b41]
- result: 
-0 2 4 3 5 7 6 8 10 9 
+$ ssh root@172.42.0.2
+Welcome to Ubuntu 20.04.2 LTS (GNU/Linux 4.20.0 x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+This system has been minimized by removing packages and content that are
+not required on a system that users do not log into.
+
+To restore this content, you can run the 'unminimize' command.
+Last login: Sat Apr 10 13:41:36 2021
+root@vaccel-guest:~# 
 ```
 
-If we examine the
-[code](https://github.com/nubificus/opencl_examples/blob/599c59e30d7fb74ff706b76fa6399e8e59f11112/vector_add/vector_add.cpp)
-we'll see it is a simple [vector add implementation in
-OpenCL](https://github.com/nubificus/opencl_examples/blob/599c59e30d7fb74ff706b76fa6399e8e59f11112/vector_add/vector_add.cpp#L47)
-with the relevant [host
-code](https://github.com/nubificus/opencl_examples/blob/599c59e30d7fb74ff706b76fa6399e8e59f11112/vector_add/vector_add.cpp#L84).
-
-So, in order to use vAccel to execute this operation, we need to do two things:
-
-- tweak the function and expose it as a shared library (`libify`) 
-- wrap the function call with the vAccel `exec` call.
-
-Lets see how easy it is to do both!
-
-### "libify" the `vector add` operation
-
-The simplest way to add an operation to vAccelRT is to "libify" this operation:
-expose the operation as a function prototype through a shared library. To do
-this, we need to tweak the build system of our example, and slightly change the
-code.
-
-The patch needed for `opencl_examples` is provided
-[here](https://github.com/nubificus/vaccel-tutorial-code/blob/a6b10c7539d8b6158e7eea81760e95c798d10715/app/0001-Libify-vector_add.patch). 
-
-In the opencl_examples directory simple run:
+Good, its working! lets exit and return to our tutorial repo base directory:
 
 ```
-patch -p1 < ../0001-Libify-vector_add.patch
+root@vaccel-guest:~# exit
+logout
+Connection to 172.42.0.2 closed.
+ ~/vaccel-tutorial-code $
 ```
 
-and rebuild:
+Let's try one of the vAccel examples, for instance image classification:
+`classify`. This small program gets an image as an input and the number of
+iterations and returns the classification tag for this image. We run the
+following:
 
 ```
-cd build
-make
-```
+$ ssh root@172.42.0.2
+Welcome to Ubuntu 20.04.2 LTS (GNU/Linux 4.20.0 x86_64)
 
-This produces a `libvector_add.so` object which exposes a vector_add operation:
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
 
-```
-$ objdump -TC vector_add/libvector_add.so  | grep vector_add
-vector_add/libvector_add.so:     file format elf64-x86-64
-0000000000012a86 g    DF .text	0000000000000b83  Base        vector_add
-```
+This system has been minimized by removing packages and content that are
+not required on a system that users do not log into.
 
-To verify the library works as expected, we build a [small program](https://github.com/nubificus/vaccel-tutorial-code/blob/4b91749bbe756401c5d21f89a4ce4aaa50d43423/app/wrapper.c) that calls it. Let's navigate to the `app/` folder in our tutorial repo and build it:
-
-```
-cd app
-make wrapper
-```
-
-Now, if we execute it we get the following:
-
-```
-$ ./wrapper 
-./wrapper: error while loading shared libraries: libvector_add.so: cannot open shared object file: No such file or directory
-```
-
-This is because we haven't specified where the system can find the shared library containing the `vector_add` implementation. If we set `LD_LIBRARY_PATH` accordingly and re-run, we get the following:
-
-```
-$ LD_LIBRARY_PATH=opencl_examples/build/vector_add/ ./wrapper 
-Using platform: Intel(R) OpenCL HD Graphics
-Using device: Intel(R) Graphics [0x9b41]
- result: 
-0 2 4 3 5 7 6 8 10 9 
-```
-
-Aha! We have a library, `libvector_add.so`, a wrapper executable
-that calls this library, and we're a bit familiar with vAccel so lets glue
-these together! 
-
-### vAccelRT integration
-
-To run abritrary function calls using vAccel, we need to use vAccel's operation
-`exec`. In short, `exec`, is a way to execute arbitrary operations, given an
-internal (user-defined, framework agnostic) representation of functions and
-arguments, provided the implementation is exposed as a symbol through a shared
-library.
-
-We build a frontend library that wraps all vAccel operations under a
-`vector_add()` function call. The
-[code](https://github.com/nubificus/vaccel-tutorial-code/blob/4b91749bbe756401c5d21f89a4ce4aaa50d43423/app/wrapper_exec.c)
-is provided in the repo. 
-
-Essentially, what the code does, is the following:
-
-- [initialize a `vaccel session`](https://github.com/nubificus/vaccel-tutorial-code/blob/4b91749bbe756401c5d21f89a4ce4aaa50d43423/app/wrapper_exec.c#L14)
-- [specify the shared object and the symbol name](https://github.com/nubificus/vaccel-tutorial-code/blob/4b91749bbe756401c5d21f89a4ce4aaa50d43423/app/wrapper_exec.c#L22)
-- [call `vaccel_exec` with these arguments](https://github.com/nubificus/vaccel-tutorial-code/blob/4b91749bbe756401c5d21f89a4ce4aaa50d43423/app/wrapper_exec.c#L25)
-- [finalize the session](https://github.com/nubificus/vaccel-tutorial-code/blob/4b91749bbe756401c5d21f89a4ce4aaa50d43423/app/wrapper_exec.c#L32)
-
-To build the library and the wrapper program we need to have a built of the
-`vaccelrt` source tree. For more info have a look at the
-[lab1](https://github.com/nubificus/vaccel-tutorials/tree/main/lab1) and
-[lab2](https://github.com/nubificus/vaccel-tutorials/tree/main/lab2) tutorials
-in this repo.
-
-In short:
-```
-cd ../vaccelrt
-mkdir -p build
-cd build
-cmake ../ -DBUILD_PLUGIN_EXEC=ON
-make
-cd ../app
-```
-
-We build the library:
-
-```
-make libwrapper.so
-```
-
-and the same wrapper program, only this time, we link against `libwrapper.so`
-instead of `libvector_add.so`:
-
-```
-make wrapper-vaccel
-```
-
-We now point the `LD_LIBRARY_PATH` variable to the path `libwrapper.so` exists and we run the program:
-
-```
-LD_LIBRARY_PATH=. ./wrapper-vaccel 
-./wrapper-vaccel: error while loading shared libraries: libvaccel.so: cannot open shared object file: No such file or directory
-```
-
-This means that we need to tell the loader where to find libvaccel.so.
-Additionally, we need to specify a vAccel backend via the `VACCEL_BACKENDS`
-enviromental variable. 
-After we've built vAccel and the vAccel exec plugin, we can run our wrapper:
-
-```
-$ LD_LIBRARY_PATH=.:../vaccelrt/build/src/ VACCEL_BACKENDS=../vaccelrt/build/plugins/exec/libvaccel-exec.so ./wrapper-vaccel 
+To restore this content, you can run the 'unminimize' command.
+Last login: Sat Apr 10 14:14:13 2021
+root@vaccel-guest:~# ./classify images/drone_0255.png 1
 Initialized session with id: 1
-Using platform: Intel(R) OpenCL HD Graphics
-Using device: Intel(R) Graphics [0x9b41]
- result: 
-0 2 4 3 5 7 6 8 10 9 
+Image size: 920627B
+classification tags: This is a dummy classification tag!
 ```
 
-We see that the execution output is exactly the same, only there's a debug
-message regarding the session initialization we've added in our frontend
-wrapper library.
-
-If we enable debug, we can see what's going on under the hood:
+We see that the operation was successful and we got a dummy string instead of
+the proper classification tag. This is expected as we have used the `noop`
+plugin, which just returns this dummy string. The output on the VM console is
+the following:
 
 ```
-VACCEL_DEBUG_LEVEL=4 LD_LIBRARY_PATH=.:../vaccelrt/build/src/ VACCEL_BACKENDS=../vaccelrt/build/plugins/exec/libvaccel-exec.so ./wrapper-vaccel 
-2021.04.09-12:16:15.11 - <debug> Initializing vAccel
-2021.04.09-12:16:15.11 - <debug> Registered plugin exec
-2021.04.09-12:16:15.11 - <debug> Registered function noop from plugin exec
-2021.04.09-12:16:15.11 - <debug> Registered function exec from plugin exec
-2021.04.09-12:16:15.11 - <debug> Loaded plugin exec from ../vaccelrt/build/plugins/exec/libvaccel-exec.so
-2021.04.09-12:16:15.11 - <debug> session:1 New session
+[noop] Calling Image classification for session 1
+[noop] Dumping arguments for Image classification:
+[noop] len_img: 920627
+[noop] will return a dummy result
+```
+
+Let's now try something else. Lets copy the wrapper-vaccel binary, along with
+its library to the guest:
+
+```
+$ scp app/wrapper-args-vaccel app/libwrapper-args.so root@172.42.0.2:~
+wrapper-args-vaccel                                                                                   100%   19KB  15.6MB/s   00:00    
+libwrapper-args.so                                                                                    100%   20KB  17.0MB/s   00:00    
+```
+
+and try to run this example:
+
+```
+# ssh root@172.42.0.2
+Welcome to Ubuntu 20.04.2 LTS (GNU/Linux 4.20.0 x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+This system has been minimized by removing packages and content that are
+not required on a system that users do not log into.
+
+To restore this content, you can run the 'unminimize' command.
+Last login: Sat Apr 10 14:28:07 2021
+root@vaccel-guest:~# LD_LIBRARY_PATH=. ./wrapper-args-vaccel 
 Initialized session with id: 1
-2021.04.09-12:16:15.11 - <debug> session:1 Looking for plugin implementing exec
-2021.04.09-12:16:15.11 - <debug> Found implementation in exec plugin
-2021.04.09-12:16:15.11 - <debug> Calling exec for session 1
-2021.04.09-12:16:15.11 - <debug> [exec] library: opencl_examples/build/vector_add/libvector_add.so
-2021.04.09-12:16:15.12 - <debug> [exec] symbol: vector_add
-Using platform: Intel(R) OpenCL HD Graphics
-Using device: Intel(R) Graphics [0x9b41]
- result: 
-0 2 4 3 5 7 6 8 10 9 
-2021.04.09-12:16:15.44 - <debug> session:1 Free session
-2021.04.09-12:16:15.44 - <debug> Shutting down vAccel
-2021.04.09-12:16:15.44 - <debug> Cleaning up plugins
-2021.04.09-12:16:15.44 - <debug> Unregistered plugin exec
+Operation successful!
+A:  0  1  2  3  4  5  6  7  8  9 
++
+B:  0  1  2  0  1  2  0  1  2  0 
+=
+C:  0  0  0  0  0  0  0  0  0  0 
 ```
 
-First vAccel is initialized. Then the libvaccel-exec.so plugin is registered,
-implementing two operations: `noop` and `exec`. Then a request for a new
-session is received, initialized and the call to `vaccel_exec` from the wrapper
-library gets triggered. The system looks for an implementation of vaccel_exec
-and forwards the call to the relevant plugin (the `exec` in this case. The
-plugin implementation parses the library argument and opens it; then, it gets
-the symbol address from this library and executes it. Finally, it cleans up the
-session and exits.
-
-### Adding arguments
-
-Well, calling a simple function with no arguments seemed a bit too naive right?
-How about we tweak the `vector_add` example so that we pass the vectors to be
-calculated as arguments?
-
-#### Tweak `vector_add`
-
-First we need to change our [wrapper
-program](https://github.com/nubificus/vaccel-tutorial-code/blob/a6b10c7539d8b6158e7eea81760e95c798d10715/app/wrapper-args.c)
-to call vector_add with arguments.
-
-We hardcode the input, two Vectors, A and B, and allocate an empty vector for the result. The last parameter is the dimension of the vectors. Our function prototype now looks like the following:
+We get no real result for the `vector_add` (array C is 0). On the VM console we
+get the following:
 
 ```
-int vector_add(int *A, int *B, int *C, int dimension);
+[noop] Calling exec for session 1
+[noop] Dumping arguments for exec:
+[noop] library: /tmp/libvector_add.so symbol: vector_add
+[noop] nr_read: 3 nr_write: 1
 ```
 
-In order to be agnostic about the parameters of the function, we pack them using a wrapper library and unpack them in our implementation code.
+This means that we asked the vAccel plugin to load `/tmp/libvector_add.so`,
+find the symbol `vector_add` and run it. Since we have used the `noop` plugin,
+we only get debug messages. No real execution took place, so array C remains
+intact. 
 
-The
-[patch](https://github.com/nubificus/vaccel-tutorial-code/blob/a6b10c7539d8b6158e7eea81760e95c798d10715/app/0002-Add-arguments-generalize-vector_add.patch) for the `vector_add` library
-is provided in the repo. To apply, run the following:
-
-```
-cd app/opencl_examples/
-patch -p1 < ../0002-Add-arguments-generalize-vector_add.patch
-```
-
-and rebuild:
+Let's try now the same example with the `exec` plugin. Shutdown the VM, and
+re-run it, while setting `VACCEL_BACKENDS` to point to the `exec` plugin. On
+the VM console terminal we do:
 
 ```
-cd build
-make
+reboot # yes, FC shuts down gracefull with a reboot ;-)
+rm -f fc.sock
+sudo \
+VACCEL_BACKENDS=vaccelrt/build/plugins/exec/libvaccel-exec.so \
+LD_LIBRARY_PATH=vaccelrt/build/src/  \
+./firecracker-vaccel --api-sock fc.sock --config-file config_virtio_accel.json --seccomp-level 0
 ```
 
-Finally, we need to tweak the frontend library to translate `vector_add` to `vaccel_exec`. The [new library](https://github.com/nubificus/vaccel-tutorial-code/blob/a6b10c7539d8b6158e7eea81760e95c798d10715/app/wrapper_exec-args.c) is in the repo. Let's build it, along with the wrapper program!
+We should be presented with a login prompt again. Login as `root` again, with
+no password. Let's move to the other terminal and try to run the same example
+as before:
 
 ```
-cd app
-make libwrapper-args.so
-make wrapper-args-vaccel
-```
+$ scp app/wrapper-args-vaccel app/libwrapper-args.so root@172.42.0.2:~
+wrapper-args-vaccel                                                                                   100%   19KB   6.6MB/s   00:00    
+libwrapper-args.so                                                                                    100%   20KB   8.6MB/s   00:00    
+root@clone:/home/ananos/tutorial/vaccel-tutorial-code# ssh root@172.42.0.2
+Welcome to Ubuntu 20.04.2 LTS (GNU/Linux 4.20.0 x86_64)
 
-Notice the [change of
-placement](https://github.com/nubificus/vaccel-tutorial-code/blob/a6b10c7539d8b6158e7eea81760e95c798d10715/app/wrapper_exec-args.c#L23)
-for the libvector_add.so. Let's copy the binary there:
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
 
-```
-cp opencl_examples/build/vector_add/libvector_add.so /tmp
-```
+This system has been minimized by removing packages and content that are
+not required on a system that users do not log into.
 
-and run our program:
-
-```
-$ LD_LIBRARY_PATH=.:../vaccelrt/build/src/ VACCEL_BACKENDS=../vaccelrt/build/plugins/exec/libvaccel-exec.so ./wrapper-args-vaccel 
+To restore this content, you can run the 'unminimize' command.
+Last login: Sat Apr 10 14:30:51 2021
+root@vaccel-guest:~# LD_LIBRARY_PATH=. ./wrapper-args-vaccel 
 Initialized session with id: 1
-Using platform: Intel(R) OpenCL HD Graphics
-Using device: Intel(R) Graphics [0x9b41]
- result: 
-0 2 4 3 5 7 6 8 10 9 
 Operation successful!
 A:  0  1  2  3  4  5  6  7  8  9 
 +
@@ -349,6 +221,21 @@ B:  0  1  2  0  1  2  0  1  2  0
 C:  0  2  4  3  5  7  6  8 10  9 
 ```
 
-Amazing right? :P
+Aha! now we can see the result is correct, array C has been populated with the
+actual `vector_add` operation result. And we can see the output in the VM
+console too:
 
-We are able to abstract away the execution of a simple operation via vAccel!
+```
+ Using platform: Intel(R) OpenCL HD Graphics
+Using device: Intel(R) Graphics [0x9b41]
+ result: 
+0 2 4 3 5 7 6 8 10 9 
+```
+
+This is the `stdout`/`stderr` of our host library. If we refrain from writing
+to `stdout`/`stderr`, we should see no messages in the VM console.
+
+
+
+
+

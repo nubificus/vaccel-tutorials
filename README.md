@@ -11,10 +11,10 @@ the process to add a new plugin to vAccel that implements a known, frontend
 operation exposed to the upper layer framework of vAccelRT.
 
 [lab3](https://github.com/nubificus/vaccel-tutorials/tree/main/lab3) describes
-the process to run a simple application consuming the vAccel API.
+the process to expose & run an arbitrary function using vAccel.
 
-[lab4](https://github.com/nubificus/vaccel-tutorials/tree/main/lab4) describes
-the process to add a new function to vAccel as a plugin and expose it to the
-upper layer framework as a generic operation of vAccelRT.
+[lab4](https://github.com/nubificus/vaccel-tutorials/tree/main/lab4) contains
+instructions on how to run an arbitrary function using vAccel from a
+Firecracker VM.
 
 As we further develop the framework, more tutorials will be added. Stay tuned!
