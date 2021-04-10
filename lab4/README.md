@@ -1,15 +1,39 @@
-# Use vAccel to run your code
+# lab4: use vAccel to run your code
 
-In this short tutorial, we will go through using the vAccel framework to execute 
-an arbitrary piece of code. The process is straightforward: we build a simple 
-library that wraps the call to our function into a vAccel `exec` operation and implement 
-the respective wrapper to call the implementation of our function via the `exec` plugin.
+## Introduction
 
-The purpose of this tutorial is to showcase the simplicity of running a piece
-of code via vAccel.
+So let's think what vAccel, fundamentally, is useful for. vAccel exposes an API
+for user applications. The functions of this API are ultimately implemented from
+plugins. That allows us to write applications that are independent of the actual
+implementation of certain functions and be more portable.
 
-First lets go through the first step of implementing a simple wrapper library
-for our code.
+Imagine an application that uses the `vaccel_image_classification` API to
+perform image inference. You can run this application on a machine with Nvidia
+GPU using the [jetson](https://github.com/cloudkernels/vaccelrt/tree/master/plugins/jetson_inference)
+plugin of vAccel runtime. If, tomorrow, you want to use a different device
+for running the operation, you just execute the *same* application with a
+plugin for that device.
+
+Now imagine you want to do something like that with a function that is not
+supported by the vAccel API. You could go implement it in the API, but for the
+cases you don't want to do that vAccel provides you with the `vaccel_exec` call.
+
+`vaccel_exec` receives as an argument a binary, a symbol name and a set of
+arguments and it executes that symbol passing it the arguments as is.
+
+That allows you to change your implementation, i.e. the binary you pass to
+`vaccel_exec` without changing the final application, i.e. the one calling
+`vaccel_exec`.
+
+Moreover, you can execute your application inside a VM transparently because
+the `virtio` plugin implements `vaccel_exec` for you, thus allowing you to run
+you code as if you were on the host.
+
+In this lab, we will go through using the vAccel `exec` operation to
+execute an arbitrary piece of code. The process is straightforward: we build a
+simple library that wraps the call to our function into a vAccel `exec`
+operation and implement the respective wrapper to call the implementation of
+our function via the `exec` plugin.
 
 ## Our code
 
