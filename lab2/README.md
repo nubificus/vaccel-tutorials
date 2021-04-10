@@ -19,8 +19,8 @@ using
 
 
 We will use the `noop` plugin as a skeleton for our new plugin which we will
-call `helloworld`. For simplicity we copy the `noop` plugin directory structure
-to a new directory:
+call `helloworld`. For simplicity, starting from the top-level of the `vaccelrt`
+repo, we copy the `noop` plugin directory structure to a new directory:
 
 ```
 cp -avf plugins/noop plugins/helloworld
