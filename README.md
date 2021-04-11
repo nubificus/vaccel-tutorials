@@ -17,4 +17,7 @@ the process to expose & run an arbitrary function using vAccel.
 instructions on how to run an arbitrary function using vAccel from a
 Firecracker VM.
 
+See https://github.com/nubificus/vaccel-tutorial-code for the code snippets /
+patches used in these tutorials.
+
 As we further develop the framework, more tutorials will be added. Stay tuned!
