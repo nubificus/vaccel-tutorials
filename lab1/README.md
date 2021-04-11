@@ -48,7 +48,7 @@ src/
 ## vAccel Hello World!
 
 The `Hello, world!` example of vAccel is a simple application that calls the
-`vaccel_noop` function of the [vAccel API](https://docs.vaccel.org/devguide/api).
+`vaccel_noop` function of the [vAccel API](https://docs.vaccel.org/api).
 
 As you have probably guessed the `vaccel_noop` function is a no-op, it does not
 require any actual acecleration, but it's useful for demonstration and debugging
