@@ -30,6 +30,7 @@ we replace `noop` with the name of our choosing (`helloworld`) so we come up wit
 the following directory structure:
 
 ```
+$ tree -L 1 plugins/helloworld
 plugins/helloworld
 ├── CMakeLists.txt
 └── vaccel.c
@@ -44,8 +45,6 @@ set(SOURCES vaccel.c ${include_dirs}/vaccel.h ${include_dirs}/plugin.h)
 
 add_library(vaccel-helloworld SHARED ${SOURCES})
 target_include_directories(vaccel-helloworld PRIVATE ${include_dirs})
-
-target_link_libraries(vaccel-helloworld PRIVATE vector_add OpenCL)
 
 # Setup make install
 install(TARGETS vaccel-helloworld DESTINATION "${lib_path}")

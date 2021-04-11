@@ -49,7 +49,11 @@ google result for `opencl example vector add` showed the following github repo:
 `https://github.com/nubificus/opencl_examples`.
 
 To build, you will need a working OpenCL installation. On a debian-based OS its
-more than enough to do a simple: `apt-get install libpocl-dev`.
+more than enough to do a simple: 
+
+```
+sudo apt-get install ocl-icd-opencl-dev libpocl2 freeglut3-dev libglew-dev libglm-dev
+```
 
 For this tutorial we will use a helper repo with the reference code. Lets clone
 it and start:
@@ -122,7 +126,7 @@ this, we need to tweak the build system of our example, and slightly change the
 code.
 
 The patch needed for `opencl_examples` is provided
-[here](https://github.com/nubificus/vaccel-tutorial-code/blob/a6b10c7539d8b6158e7eea81760e95c798d10715/app/0001-Libify-vector_add.patch). 
+[here](https://github.com/nubificus/vaccel-tutorial-code/blob/main/app/0001-Libify-vector_add.patch). 
 
 In the opencl_examples directory simple run:
 
@@ -145,7 +149,7 @@ vector_add/libvector_add.so:     file format elf64-x86-64
 0000000000012a86 g    DF .text	0000000000000b83  Base        vector_add
 ```
 
-To verify the library works as expected, we build a [small program](https://github.com/nubificus/vaccel-tutorial-code/blob/4b91749bbe756401c5d21f89a4ce4aaa50d43423/app/wrapper.c) that calls it. Let's navigate to the `app/` folder in our tutorial repo and build it:
+To verify the library works as expected, we build a [small program](https://github.com/nubificus/vaccel-tutorial-code/blob/main/app/wrapper.c) that calls it. Let's navigate to the `app/` folder in our tutorial repo and build it:
 
 ```
 cd app
@@ -183,15 +187,15 @@ library.
 
 We build a frontend library that wraps all vAccel operations under a
 `vector_add()` function call. The
-[code](https://github.com/nubificus/vaccel-tutorial-code/blob/4b91749bbe756401c5d21f89a4ce4aaa50d43423/app/wrapper_exec.c)
+[code](https://github.com/nubificus/vaccel-tutorial-code/blob/main/app/wrapper_exec.c)
 is provided in the repo. 
 
 Essentially, what the code does, is the following:
 
-- [initialize a `vaccel session`](https://github.com/nubificus/vaccel-tutorial-code/blob/4b91749bbe756401c5d21f89a4ce4aaa50d43423/app/wrapper_exec.c#L14)
-- [specify the shared object and the symbol name](https://github.com/nubificus/vaccel-tutorial-code/blob/4b91749bbe756401c5d21f89a4ce4aaa50d43423/app/wrapper_exec.c#L22)
-- [call `vaccel_exec` with these arguments](https://github.com/nubificus/vaccel-tutorial-code/blob/4b91749bbe756401c5d21f89a4ce4aaa50d43423/app/wrapper_exec.c#L25)
-- [finalize the session](https://github.com/nubificus/vaccel-tutorial-code/blob/4b91749bbe756401c5d21f89a4ce4aaa50d43423/app/wrapper_exec.c#L32)
+- [initialize a `vaccel session`](https://github.com/nubificus/vaccel-tutorial-code/blob/main/app/wrapper_exec.c#L13)
+- [specify the shared object and the symbol name](https://github.com/nubificus/vaccel-tutorial-code/blob/main/app/wrapper_exec.c#L21)
+- [call `vaccel_exec` with these arguments](https://github.com/nubificus/vaccel-tutorial-code/blob/main/app/wrapper_exec.c#L24)
+- [finalize the session](https://github.com/nubificus/vaccel-tutorial-code/blob/main/app/wrapper_exec.c#L31)
 
 To build the library and the wrapper program we need to have a built of the
 `vaccelrt` source tree. For more info have a look at the
@@ -206,7 +210,7 @@ mkdir -p build
 cd build
 cmake ../ -DBUILD_PLUGIN_EXEC=ON
 make
-cd ../app
+cd ../../app
 ```
 
 We build the library:
@@ -226,13 +230,13 @@ We now point the `LD_LIBRARY_PATH` variable to the path `libwrapper.so` exists a
 
 ```
 LD_LIBRARY_PATH=. ./wrapper-vaccel 
-./wrapper-vaccel: error while loading shared libraries: libvaccel.so: cannot open shared object file: No such file or directory
+Initialized session with id: 1
+Could not run op: 95
 ```
 
-This means that we need to tell the loader where to find libvaccel.so.
-Additionally, we need to specify a vAccel backend via the `VACCEL_BACKENDS`
-enviromental variable. 
-After we've built vAccel and the vAccel exec plugin, we can run our wrapper:
+This means that we need to tell vAccel which plugin we want to dispath the call
+to `vaccel_exec` to. We use the `VACCEL_BACKENDS` enviromental variable.  After
+we've built vAccel and the vAccel exec plugin, we can run our wrapper:
 
 ```
 $ LD_LIBRARY_PATH=.:../vaccelrt/build/src/ VACCEL_BACKENDS=../vaccelrt/build/plugins/exec/libvaccel-exec.so ./wrapper-vaccel 
@@ -250,7 +254,7 @@ wrapper library.
 If we enable debug, we can see what's going on under the hood:
 
 ```
-VACCEL_DEBUG_LEVEL=4 LD_LIBRARY_PATH=.:../vaccelrt/build/src/ VACCEL_BACKENDS=../vaccelrt/build/plugins/exec/libvaccel-exec.so ./wrapper-vaccel 
+$ VACCEL_DEBUG_LEVEL=4 LD_LIBRARY_PATH=.:../vaccelrt/build/src/ VACCEL_BACKENDS=../vaccelrt/build/plugins/exec/libvaccel-exec.so ./wrapper-vaccel 
 2021.04.09-12:16:15.11 - <debug> Initializing vAccel
 2021.04.09-12:16:15.11 - <debug> Registered plugin exec
 2021.04.09-12:16:15.11 - <debug> Registered function noop from plugin exec

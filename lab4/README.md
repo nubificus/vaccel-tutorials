@@ -34,9 +34,10 @@ ahead and fetch them locally:
 # get latest release
 FC_RELEASE=`curl --silent "https://api.github.com/repos/cloudkernels/firecracker/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/'`
 ASSETS_RELEASE=`curl --silent "https://api.github.com/repos/nubificus/fc-x86-guest-build/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/'`
-wget https://github.com/cloudkernels/firecracker/releases/download/$FC_RELEASE/firecracker-vaccel
-wget https://github.com/nubificus/fc-x86-guest-build/releases/download/$ASSETS_RELEASE/rootfs.img
-wget https://github.com/nubificus/fc-x86-guest-build/releases/download/$REL/vmlinux
+wget -c https://github.com/cloudkernels/firecracker/releases/download/$FC_RELEASE/firecracker-vaccel
+wget -c https://github.com/nubificus/fc-x86-guest-build/releases/download/$ASSETS_RELEASE/rootfs.img
+wget -c https://github.com/nubificus/fc-x86-guest-build/releases/download/$ASSETS_RELEASE/vmlinux
+chmod +x firecracker-vaccel
 
 ```
 
@@ -196,10 +197,7 @@ no password. Let's move to the other terminal and try to run the same example
 as before:
 
 ```
-$ scp app/wrapper-args-vaccel app/libwrapper-args.so root@172.42.0.2:~
-wrapper-args-vaccel                                                                                   100%   19KB   6.6MB/s   00:00    
-libwrapper-args.so                                                                                    100%   20KB   8.6MB/s   00:00    
-root@clone:/home/ananos/tutorial/vaccel-tutorial-code# ssh root@172.42.0.2
+$ ssh root@172.42.0.2
 Welcome to Ubuntu 20.04.2 LTS (GNU/Linux 4.20.0 x86_64)
 
  * Documentation:  https://help.ubuntu.com

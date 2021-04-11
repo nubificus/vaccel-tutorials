@@ -94,7 +94,7 @@ All vAccel operations are performed in the context of a "user" session, so the
 first thing that the program does is creating a new `vaccel_session`.
 Next, it performs the actual operation `vaccel_noop` and closes the session.
 
-### Building application
+### Building an application
 
 In order to build our "Hello, world" example we need to link it against
 `libvaccel` which depends on `libdl`.
@@ -146,7 +146,7 @@ creation of a new vAccel session with id `1`. Finally, upon call of
 the operation and is unable to find one, so the call fails. Finally, the
 vAccel session `1` is freed and the execution exits.
 
-### Build a `noop` plugin
+### Build the `noop` plugin
 
 Let's go back and build a plugin that implements this operation, `noop`:
 
