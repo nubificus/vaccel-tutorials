@@ -102,6 +102,10 @@ endif(BUILD_PLUGIN_HELLOWORLD)
 and to `CMakeLists.txt`:
 
 ```cmake
+...
+...
+...
+
 option(BUILD_PLUGIN_HELLOWORLD "Build the hello-world debugging plugin" OFF)
 ```
 
@@ -118,6 +122,9 @@ one instead of the `noop` one!
 
 ```
 $ LD_LIBRARY_PATH=src VACCEL_DEBUG_LEVEL=4 VACCEL_BACKENDS=./plugins/helloworld/libvaccel-helloworld.so ./hello_world
+```
+should return:
+```
 2021.04.09-12:40:45.86 - <debug> Initializing vAccel
 2021.04.09-12:40:45.86 - <debug> Registered plugin helloworld
 2021.04.09-12:40:45.86 - <debug> Registered function noop from plugin helloworld
