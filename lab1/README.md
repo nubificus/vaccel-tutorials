@@ -99,12 +99,13 @@ Next, it performs the actual operation `vaccel_noop` and closes the session.
 In order to build our "Hello, world" example we need to link it against
 `libvaccel` which depends on `libdl`.
 
-We put the above snippet in a file named `hello_world.c`, compile it and link
-it.
+We put the above snippet in a file named `noop.c`, compile it and link
+it, and this is provided in the examples directory as seen below.
+
 
 ```
-gcc -I ../src hello_world.c -c
-gcc -L src hello_world.o -o hello_world -lvaccel -ldl
+gcc -I ../src/include/ -I ../third-party/slog/src ../examples/noop.c -c
+gcc -L src noop.o -o noop -lvaccel -ldl
 ```
 
 The `-I` flag above tells gcc to look for vaccel.h header file under the src
@@ -116,7 +117,10 @@ directory of vaccelrt, whereas the `-L` flag it tells it to look for
 Let's run our 'Hello, World' application:
 
 ```
-$ LD_LIBRARY_PATH=./src ./hello_world
+$ LD_LIBRARY_PATH=./src ./noop
+```
+should return
+```
 Initialized session with id: 1
 Could not run op: 95
 ```
@@ -125,7 +129,10 @@ Not what we expected. Let's enable vAccel runtime debugging, by setting the
 `VACCEL_DEBUG_LEVEL` environment variable, to shed a bit of light:
 
 ```
-$ VACCEL_DEBUG_LEVEL=4 ./hello_world
+$ LD_LIBRARY_PATH=./src VACCEL_DEBUG_LEVEL=4  ./noop
+```
+should return
+```
 2021.04.09-09:09:03.39 - <debug> Initializing vAccel
 2021.04.09-09:09:03.39 - <debug> session:1 New session
 Initialized session with id: 1
@@ -160,7 +167,11 @@ variable `VACCEL_BACKENDS`. When we execute the example and specify the
 plugin to use we get the following:
 
 ```
-$ VACCEL_DEBUG_LEVEL=4 VACCEL_BACKENDS=./plugins/noop/libvaccel-noop.so ./hello_world
+$ LD_LIBRARY_PATH=./src VACCEL_DEBUG_LEVEL=4 VACCEL_BACKENDS=./plugins/noop/libvaccel-noop.so  ./noop
+```
+should return:
+
+```
 2021.04.09-09:10:03.48 - <debug> Initializing vAccel
 2021.04.09-09:10:03.48 - <debug> Registered plugin noop
 2021.04.09-09:10:03.48 - <debug> Registered function noop from plugin noop

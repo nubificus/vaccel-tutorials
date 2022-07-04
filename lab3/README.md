@@ -19,7 +19,6 @@ Now imagine you want to do something like that with a function that is not
 supported by the vAccel API. You could go implement it in the API, but for the
 cases you don't want to do that vAccel provides you with the `vaccel_exec`
 call.
-
 `vaccel_exec` receives as an argument a binary, a symbol name and a set of
 arguments and it executes that symbol passing it the arguments as is.
 
@@ -69,7 +68,7 @@ The directory tree is the following:
 $ tree -d .
 .
 ├── app
-│   └── opencl_examples
+│   └── opencl_examples
 └── vaccelrt
 
 ```
@@ -89,9 +88,18 @@ There should be two executables lying around in each of the example folders:
 
 ```
 $ find . -path ./CMakeFiles -prune -o -type f -executable
+```
+
+```
+...
+
 ./list_platforms/ocl_list_platforms
+
+...
+
 ./vector_add/ocl_vector_add
 
+...
 ```
 
 The part we're interested in is the `vector add` executable, so lets run it!
@@ -128,9 +136,12 @@ code.
 The patch needed for `opencl_examples` is provided
 [here](https://github.com/nubificus/vaccel-tutorial-code/blob/main/app/0001-Libify-vector_add.patch). 
 
-In the opencl_examples directory simple run:
+>*TODO: Maybe explain what these patches are*
+
+In the opencl_examples directory simply run:
 
 ```
+cd ../
 patch -p1 < ../0001-Libify-vector_add.patch
 ```
 
@@ -151,8 +162,10 @@ vector_add/libvector_add.so:     file format elf64-x86-64
 
 To verify the library works as expected, we build a [small program](https://github.com/nubificus/vaccel-tutorial-code/blob/main/app/wrapper.c) that calls it. Let's navigate to the `app/` folder in our tutorial repo and build it:
 
+
+
 ```
-cd app
+cd ../../
 make wrapper
 ```
 
@@ -229,7 +242,7 @@ make wrapper-vaccel
 We now point the `LD_LIBRARY_PATH` variable to the path `libwrapper.so` exists and we run the program:
 
 ```
-LD_LIBRARY_PATH=. ./wrapper-vaccel 
+LD_LIBRARY_PATH=.:../vaccelrt/build/src ./wrapper-vaccel 
 Initialized session with id: 1
 Could not run op: 95
 ```
@@ -239,7 +252,10 @@ to `vaccel_exec` to. We use the `VACCEL_BACKENDS` enviromental variable.  After
 we've built vAccel and the vAccel exec plugin, we can run our wrapper:
 
 ```
-$ LD_LIBRARY_PATH=.:../vaccelrt/build/src/ VACCEL_BACKENDS=../vaccelrt/build/plugins/exec/libvaccel-exec.so ./wrapper-vaccel 
+$ LD_LIBRARY_PATH=.:../vaccelrt/build/src/ VACCEL_BACKENDS=../vaccelrt/build/plugins/exec/libvaccel-exec.so ./wrapper-vaccel
+```
+
+```
 Initialized session with id: 1
 Using platform: Intel(R) OpenCL HD Graphics
 Using device: Intel(R) Graphics [0x9b41]
@@ -254,7 +270,9 @@ wrapper library.
 If we enable debug, we can see what's going on under the hood:
 
 ```
-$ VACCEL_DEBUG_LEVEL=4 LD_LIBRARY_PATH=.:../vaccelrt/build/src/ VACCEL_BACKENDS=../vaccelrt/build/plugins/exec/libvaccel-exec.so ./wrapper-vaccel 
+$ VACCEL_DEBUG_LEVEL=4 LD_LIBRARY_PATH=.:../vaccelrt/build/src/ VACCEL_BACKENDS=../vaccelrt/build/plugins/exec/libvaccel-exec.so ./wrapper-vaccel
+```
+``` 
 2021.04.09-12:16:15.11 - <debug> Initializing vAccel
 2021.04.09-12:16:15.11 - <debug> Registered plugin exec
 2021.04.09-12:16:15.11 - <debug> Registered function noop from plugin exec
@@ -311,7 +329,7 @@ The
 is provided in the repo. To apply, run the following:
 
 ```
-cd app/opencl_examples/
+cd opencl_examples/
 patch -p1 < ../0002-Add-arguments-generalize-vector_add.patch
 ```
 
@@ -325,7 +343,7 @@ make
 Finally, we need to tweak the frontend library to translate `vector_add` to `vaccel_exec`. The [new library](https://github.com/nubificus/vaccel-tutorial-code/blob/a6b10c7539d8b6158e7eea81760e95c798d10715/app/wrapper_exec-args.c) is in the repo. Let's build it, along with the wrapper program!
 
 ```
-cd app
+cd ../../
 make libwrapper-args.so
 make wrapper-args-vaccel
 ```
@@ -341,7 +359,10 @@ cp opencl_examples/build/vector_add/libvector_add.so /tmp
 and run our program:
 
 ```
-$ LD_LIBRARY_PATH=.:../vaccelrt/build/src/ VACCEL_BACKENDS=../vaccelrt/build/plugins/exec/libvaccel-exec.so ./wrapper-args-vaccel 
+$ LD_LIBRARY_PATH=.:../vaccelrt/build/src/ VACCEL_BACKENDS=../vaccelrt/build/plugins/exec/libvaccel-exec.so ./wrapper-args-vaccel
+```
+
+```
 Initialized session with id: 1
 Using platform: Intel(R) OpenCL HD Graphics
 Using device: Intel(R) Graphics [0x9b41]
