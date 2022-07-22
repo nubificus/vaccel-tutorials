@@ -104,7 +104,7 @@ it, and this is provided in the examples directory as seen below.
 
 
 ```
-gcc -I ../src/include/ -I ../third-party/slog/src ../examples/noop.c
+gcc -I ../src/include/ -I ../third-party/slog/src ../examples/noop.c -c
 gcc -L src noop.o -o noop -lvaccel -ldl
 ```
 
