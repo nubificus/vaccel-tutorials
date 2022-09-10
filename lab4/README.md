@@ -7,7 +7,7 @@ In the previous lab exercises we went through the essential steps to build
 vAccel framework.
 
 In this lab, we go through the process of calling a vAccel operation in a
-lightweight Virtual Machine and running the code in the Host. To achive this,
+lightweight Virtual Machine and running the code in the Host. To achieve this,
 we need some kind of transport layer that forwards the relevant calls from the
 VM to the Host where the actual execution is going to be triggered. vAccel
 supports a number of ways to do this; in this lab we are going to use vAccel's
@@ -20,7 +20,7 @@ Lets go through the process of booting a Firecracker VM and use vAccel from the
 guest to do the simple vector add operation we saw in
 [lab4](https://github.com/nubificus/vaccel-tutorials/tree/main/lab4). We assume
 we've completed lab4 and we are in the [helper
-repo](https://github.com/nubificus/vaccel-tutorials-code) base directory.
+repo](https://github.com/nubificus/vaccel-tutorial-code) base directory.
 
 ## Booting a VM
 
@@ -34,7 +34,8 @@ ahead and fetch them locally:
 # get latest release
 FC_RELEASE=`curl --silent "https://api.github.com/repos/cloudkernels/firecracker/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/'`
 ASSETS_RELEASE=`curl --silent "https://api.github.com/repos/nubificus/fc-x86-guest-build/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/'`
-wget -c https://github.com/cloudkernels/firecracker/releases/download/$FC_RELEASE/firecracker-vaccel
+wget -c https://github.com/cloudkernels/firecracker/releases/download/$FC_RELEASE/firecracker-vaccel-$(uname -m)
+mv firecracker-vaccel-$(uname -m) firecracker-vaccel
 wget -c https://github.com/nubificus/fc-x86-guest-build/releases/download/$ASSETS_RELEASE/rootfs.img
 wget -c https://github.com/nubificus/fc-x86-guest-build/releases/download/$ASSETS_RELEASE/vmlinux
 chmod +x firecracker-vaccel
@@ -232,8 +233,3 @@ Using device: Intel(R) Graphics [0x9b41]
 
 This is the `stdout`/`stderr` of our host library. If we refrain from writing
 to `stdout`/`stderr`, we should see no messages in the VM console.
-
-
-
-
-

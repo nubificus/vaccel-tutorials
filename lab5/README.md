@@ -1,6 +1,6 @@
-# Lab 5 - Writing a plugin/operation for an arbitary function
+# lab 5: writing a plugin/operation for an arbitary function
 
-This is a rather long lab so it has been seperated in small(er) sections for it to be easily digestable. 
+This is a rather long lab so it has been separated in small(er) sections for it to be easily digestable. 
 
 
 # Creating an operation
@@ -14,7 +14,7 @@ Working from the `src` directory:
 Since we have an operation name in mind, lets add this first to the vaccelrt codebase.
 In the `include/ops/vaccel_ops.h` file we can see there is an enum declration of `vaccel_op_type`:
 
-Here there are some declrations made already for some of the operations already used but we need to add our operation, "FOO" as shown below.
+Here there are some declarations made for some of the operations already used but we need to add our operation, "FOO" as shown below.
 
 ```C
 enum vaccel_op_type {
@@ -38,7 +38,7 @@ enum vaccel_op_type {
 };
 ```
 
-Underneath in this same file, we have the operation name array ```vaccel_op_name``` and we can just add the description of the operation in the relevant position.
+Underneath in this same file, we have the operation name array ```vaccel_op_name``` and we can just add the description of the operation in the relevant position. In this case, we can add `foo` as the description.
 
 Great, now we can save this file and return back `/include/ops` directory.
 
@@ -66,21 +66,22 @@ int vaccel_foo(struct vaccel_session *sess, uint32_t a, uint32_t b, uint32_t c);
 
 #endif /* __VACCEL_FOO_H__ */
 ```
-One thing to note here is that we must declare what variables our operation is going to use; for the purpose of this let us say that we are going to take 2 *READ* variables a and b and add them up and then add them together and *WRITE* them to variable c. Note the emphasis on *READ* and *WRITE* here, this will important later on so do note this down somewhere if your function is complex. Also the `struct vaccel_session *sess` is important here to init the vaccelrt session.
+
+One thing to note here is that we must declare what variables our operation is going to use; for the purpose of this, let us say that we are going to take 2 *READ* variables a and b and add them up and then add them together and *WRITE* them to variable c. Note the emphasis on *READ* and *WRITE* here, this will be important later on. So do note this down somewhere if your function is complex. Also the `struct vaccel_session *sess` is important here to init the vaccelrt session.
 
 ---
 
 We can now return to directory `/include`.
 
-The only change we need to do here is in the file `vaccel.h` here, we can add our header file ```#include "ops/foo.h"``` in this file.
+The only change we need to do here is in the `vaccel.h` file. Here, we can add our header `#include "ops/foo.h"` in this file.
 
-We can now leave the `include` directory completely and now lets move onto the `src/ops` directory.
+We can now leave the `include` directory completely and move onto the `src/ops` directory.
 
-In this directory, as you may see, there will be several files with each operation with its relevant c file and then the header to accompany with so as before, lets create two files in this directory called `foo.h` and `foo.c`.
+In this directory, as you may see, there will be several files for each operation with its relevant c file and then the header file to accompany with. So as before, lets create two files in this directory called `foo.h` and `foo.c`.
 
-Working with the more simpler file first, lets look at the header file first: 
+Working with the simpler one first, lets look at the header file: 
 
-Here you can just borrow the template here once again noting that this time this will be an unpack function of the variables we mentioned in the previous part of the lab.
+Here you can just borrow the template once again, noting that this time this will be an unpack function of the variables we mentioned in the previous part of the lab.
 
 ```C
 #ifndef __FOO_H__
@@ -149,15 +150,15 @@ int vaccel_foo_unpack(struct vaccel_session *sess, struct vaccel_arg *read,
 	return vaccel_foo(sess, a, b, c);
 }
 ```
-The first part of the file tries to find implementation of the operation FOO in the plugin which we will talk about later on and if it does find an implementation - it returns it.
+The first part of the file tries to find an implementation of the operation FOO in the plugin (which we will talk about later on) and if it does find an implementation - it returns it.
 
-The latter part of the file unpacks the variables and here note the variables `nr_read` and `nr_write` and make sure they correspond to the correct number of read and write variables. Here in this example I have just 2, 1 as before and it is relatively simple to implement. For more complex examples, feel free to explore the other .c files in this directory to get an idea of the structure you must implement for this file.
+The latter part of the file unpacks the variables. Pay attention to the variables `nr_read` and `nr_write` and make sure they correspond to the correct number of read and write variables. In this example I just use 2, 1 as I only have 2 read variables and 1 write variable, as before and it is relatively simple to implement. For more complex examples, feel free to explore the other .c files in this directory to get an idea of the structure you must implement for this file.
 
 Cool! Just a few more things in this directory before we can close it for good!:
 
 ---
 
-Next in the `genop.c` file add the relevant `#include "foo.h"` once more and in the `typedef structure`:
+Next in the `genop.c` file add the relevant `#include "foo.h"` header once more and include our operation in the `typedef structure`:
 
 ```C
 unpack_func_t callbacks[VACCEL_FUNCTIONS_NR] = {
@@ -172,22 +173,23 @@ unpack_func_t callbacks[VACCEL_FUNCTIONS_NR] = {
 	vaccel_foo_unpack,
 };
 ```
+
 Add the `vaccel_foo_unpack` function into this array and we can now save and close this file. And thats it for this directoy! Lets move on to the overall `src` directory once more.
 
-Final thing here to note is just in the `vaccel.h` file here, once more add the `#include "ops/foo.h"` and we are done!
+Final thing to note here is to once more add the `#include "ops/foo.h"` in the `vaccel.h` file and we are done!
 
-Now lets make sure this operation works before we make a start on the actual function itself.
+Now lets make sure this operation works before we start working on the actual function itself.
 
 ---
 
 ## Testing the operation
 
-We are just going to edit the noop plugin here as mentioned in the previous labs as most of the framework of the plugin is already written here and it is much quicker to test it.
+We are just going to edit the noop plugin here as mentioned in the previous labs as most of the framework of the plugin is already written and it is much quicker to test it.
 Would rather find out something is wrong instead of writing an entirely new plugin and trying to debug two things at once - not fun!
 
-In the `vaccel.c` file here:
+So, starting at the top of the `vaccelrt` directory, we need to go to `plugins/noop` directory and edit the `vaccel.c` file here:
 
-Once again just add the `#include <ops/foo.h>` at the top of the file and now we can scroll down until we get to:
+Once again, add the `#include <ops/foo.h>` at the top of the file and now we can scroll down until we get to:
 
 ```C
 struct vaccel_op ops[] = {
@@ -208,9 +210,10 @@ Here we are initialising the operations for the vaccel runtime and we can just a
 ```C
 VACCEL_OP_INIT(ops[9], VACCEL_FOO, noop_foo)
 ```
-`VACCEL_FOO` is our operation we are creating and we have a function using this operation which we will call `noop_foo`.
 
-Now we have to actually implement this `noop_foo` function otherwise we will not need be use this operation.
+`VACCEL_FOO` is the operation we are creating and we have a function using this operation which we will call `noop_foo`.
+
+Now we have to actually implement this `noop_foo` function otherwise we will not be able be use this operation.
 
 ```C
 static int noop_foo(struct vaccel_session *sess, uint32_t a, uint32_t b,
@@ -222,8 +225,20 @@ static int noop_foo(struct vaccel_session *sess, uint32_t a, uint32_t b,
 }
 ```
 Paste this above the struct and it should be ready to go.
+Great! Now just repeat the same exercise we did in lab1. To sum up the required commands:
 
-Great! Now just repeat the same exercise we did in lab1 and we can see that the operation FOO should have been implementated in the debug console:
+```bash
+cd ../..
+mkdir -p build
+cd build
+cmake ../ -DBUILD_PLUGIN_NOOP=ON
+make
+gcc -I ../src/include/ -I ../third-party/slog/src ../examples/noop.c -c
+gcc -L src noop.o -o noop -lvaccel -ldl
+LD_LIBRARY_PATH=./src VACCEL_DEBUG_LEVEL=4 VACCEL_BACKENDS=./plugins/noop/libvaccel-noop.so  ./noop
+```
+
+We can see in the debug console that the operation FOO should have been implementated:
 
 ```
 2022.03.21-20:04:36.82 - <debug> Initializing vAccel
@@ -238,15 +253,14 @@ Great! Now just repeat the same exercise we did in lab1 and we can see that the 
 2022.03.21-20:04:36.82 - <debug> Registered function TensorFlow session run from plugin noop
 2022.03.21-20:04:36.82 - <debug> Registered function TensorFlow session delete from plugin noop
 2022.03.21-20:04:36.82 - <debug> Registered function Foo function from plugin noop
-...
 ```
 
 ## Function implementation
 
-Now for the function implementation, we can just write out our own plugin which will then contain the function as need:
+Now for the function implementation, we can just write out our own plugin which will then contain the function as needed:
 
 
-As such in the third lab, create a new folder in the plugins directory and lets call it foo_plugin.
+As we did in the third lab, create a new folder in the plugins directory and lets call it `foo_plugin`.
 
 Once again for `CMakeLists.txt`:
 
@@ -268,12 +282,12 @@ Lets say for the purpose of this plugin it takes 2 variables, `a` and `b` and ad
 #include <stdio.h>
 #include <plugin.h>
 
-static int vaccel_foo(struct vaccel_session *session, uint32_t a, uint32_t b, uint32_t c)
+static int foo(struct vaccel_session *session, uint32_t a, uint32_t b, uint32_t c)
 {
 	fprintf(stdout, "Calling vaccel-foo for session %u\n", session->session_id);
 	printf("---\n\n");
 
-	printf("Calling foo operation here");
+	printf("Calling foo operation here\n");
 	c = a + b;
 	printf("%d", c);
 
@@ -283,7 +297,7 @@ static int vaccel_foo(struct vaccel_session *session, uint32_t a, uint32_t b, ui
 	return VACCEL_OK;
 }
 
-struct vaccel_op op = VACCEL_OP_INIT(op, VACCEL_FOO, vaccel_foo);
+struct vaccel_op op = VACCEL_OP_INIT(op, VACCEL_FOO, foo);
 
 static int init(void)
 {
@@ -343,6 +357,47 @@ close_session:
 	return ret;
 }
 ```
+
+To build the plugin (as we did in lab2), add the following snippet to `plugins/CMakeLists.txt`:
+
+```cmake
+...
+...
+
+if (BUILD_PLUGIN_FOO)
+        add_subdirectory(foo_plugin)
+endif(BUILD_PLUGIN_FOO)
+```
+and to `CMakeLists.txt`:
+
+```cmake
+...
+...
+
+option(BUILD_PLUGIN_FOO "Build the foo plugin" OFF)
+```
+
+Now we can build our new plugin, by specifying the new option we just added:
+
+```bash
+cd build
+cmake ../ -DBUILD_PLUGIN_FOO=ON
+make
+```
+
+Now let's build the example:
+
+```bash
+gcc -I ../src/include/ -I ../third-party/slog/src ../examples/foo_example.c -c
+gcc -L src foo_example.o -o foo_example -lvaccel -ldl
+```
+
+And run it:
+
+```bash
+LD_LIBRARY_PATH=./src VACCEL_DEBUG_LEVEL=4 VACCEL_BACKENDS=./plugins/foo_plugin/libvaccel-foo.so  ./foo_example
+```
+
 
 And now for the result:
 

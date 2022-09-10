@@ -210,7 +210,7 @@ Essentially, what the code does, is the following:
 - [call `vaccel_exec` with these arguments](https://github.com/nubificus/vaccel-tutorial-code/blob/main/app/wrapper_exec.c#L24)
 - [finalize the session](https://github.com/nubificus/vaccel-tutorial-code/blob/main/app/wrapper_exec.c#L31)
 
-To build the library and the wrapper program we need to have a built of the
+To build the library and the wrapper program we need to have a build of the
 `vaccelrt` source tree. For more info have a look at the
 [lab1](https://github.com/nubificus/vaccel-tutorials/tree/main/lab1) and
 [lab2](https://github.com/nubificus/vaccel-tutorials/tree/main/lab2) tutorials
@@ -239,7 +239,7 @@ instead of `libvector_add.so`:
 make wrapper-vaccel
 ```
 
-We now point the `LD_LIBRARY_PATH` variable to the path `libwrapper.so` exists and we run the program:
+We now point the `LD_LIBRARY_PATH` variable to the path where `libwrapper.so` exists and we run the program:
 
 ```
 LD_LIBRARY_PATH=.:../vaccelrt/build/src ./wrapper-vaccel 
@@ -247,7 +247,7 @@ Initialized session with id: 1
 Could not run op: 95
 ```
 
-This means that we need to tell vAccel which plugin we want to dispath the call
+This means that we need to tell vAccel which plugin we want to dispatch the call
 to `vaccel_exec` to. We use the `VACCEL_BACKENDS` enviromental variable.  After
 we've built vAccel and the vAccel exec plugin, we can run our wrapper:
 

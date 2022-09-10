@@ -121,7 +121,7 @@ We see that a new plugin is now available, `libvaccel-helloworld.so`. Lets use t
 one instead of the `noop` one!
 
 ```
-$ LD_LIBRARY_PATH=src VACCEL_DEBUG_LEVEL=4 VACCEL_BACKENDS=./plugins/helloworld/libvaccel-helloworld.so ./helloworld
+$ LD_LIBRARY_PATH=src VACCEL_DEBUG_LEVEL=4 VACCEL_BACKENDS=./plugins/helloworld/libvaccel-helloworld.so ./noop
 ```
 should return:
 ```
