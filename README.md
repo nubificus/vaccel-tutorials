@@ -17,9 +17,9 @@ the process to expose & run an arbitrary function using vAccel.
 instructions on how to run an arbitrary function using vAccel from a
 Firecracker VM.
 
-[lab5](https://github.com/nubificus/vaccel-tutorials/tree/main/lab5) contains
-instructions on how to create and write your own plugin and operation for 
-vAccel.
+[lab5](https://github.com/nubificus/vaccel-tutorials/tree/main/lab5) presents
+an end-to-end example of adding an operation on the frontend / static user API and implementing this operation using a plugin,
+combining the build plugin instructions from lab2.
 
 See https://github.com/nubificus/vaccel-tutorial-code for the code snippets /
 patches used in these tutorials.

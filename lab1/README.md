@@ -8,11 +8,11 @@ of the available back-end plugins.
 
 ### Get the code
 
-Clone the vAcceRT repository using the following command:
+Τhroughout the labs we usually refer to a helper repo: [tutorials-code-repo](https://github.com/nubificus/vaccel-tutorial-code). We have included the [vAccelRT](https://github.com/cloudkernels/vaccelrt/) as a submodule inside the helper repo for the purposes of these labs. If you only want to try out lab1/lab2, then you can clone the [cloudkernels/vaccelrt](https://github.com/cloudkernels/vaccelrt/) directly.
 
 ```
-git clone --recursive https://github.com/cloudkernels/vaccelrt
-cd vaccelrt
+git clone --recursive https://github.com/nubificus/vaccel-tutorial-code.git
+cd vaccel-tutorial-code/vaccelrt
 ```
 
 ### Build the core runtime
@@ -51,7 +51,7 @@ The `Hello, world!` example of vAccel is a simple application that calls the
 `vaccel_noop` function of the [vAccel API](https://docs.vaccel.org/api).
 
 As you have probably guessed the `vaccel_noop` function is a no-op, it does not
-require any actual acecleration, but it's useful for demonstration and debugging
+require any actual acceleration, but it's useful for demonstration and debugging
 purposes, so we will be using it along the course of this and following labs.
 
 Here is the code which you can also find in the
@@ -191,5 +191,5 @@ Calling no-op for session 1
 
 We saw how we build the vAccel runtime system. We then learnt what a vAccel
 Hello, World application looks like and how we build it. Finally, we saw how
-he build one of the available vAccel runtime plugins and use it to execute our
+we build one of the available vAccel runtime plugins and use it to execute our
 application.
