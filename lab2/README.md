@@ -56,6 +56,8 @@ adding a simple message:
 ```C
 #include <stdio.h>
 #include <plugin.h>
+#include <ops/vaccel_ops.h>
+#include <error.h>
 
 static int helloworld(struct vaccel_session *session)
 {
