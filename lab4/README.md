@@ -42,6 +42,8 @@ chmod +x firecracker-vaccel
 
 ```
 
+Also the `virtio`-config file(*config_virtio_accel.json*) can be retrived from [vaccel-tutorial-code-repo](https://github.com/nubificus/vaccel-tutorial-code/blob/main/config_virtio_accel.json) 
+
 The first thing to do is boot the VM with vAccel enabled. To be able to share
 files with the VM, we'll use the network. The config file specifies a tap
 interface which will be created when the VM starts, so let's create a tap
