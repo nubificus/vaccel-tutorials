@@ -42,12 +42,15 @@ the `noop` to `helloworld` change:
 ```cmake
 set(include_dirs ${CMAKE_SOURCE_DIR}/src)
 set(SOURCES vaccel.c ${include_dirs}/vaccel.h ${include_dirs}/plugin.h)
+set_property(SOURCE ${include_dirs}/vaccel.h PROPERTY GENERATED 1)
 
 add_library(vaccel-helloworld SHARED ${SOURCES})
 target_include_directories(vaccel-helloworld PRIVATE ${include_dirs})
 
 # Setup make install
 install(TARGETS vaccel-helloworld DESTINATION "${lib_path}")
+
+set(include_dirs ${CMAKE_SOURCE_DIR}/src/include )
 ```
 
 Similarly, we replace the plugin implementation with our own in `vaccel.c`,
