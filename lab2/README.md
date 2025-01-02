@@ -5,7 +5,7 @@ we saw how to write, build and execute a simple vAccel application calling the
 `vaccel_noop` function which is implemented by the `noop` plugin.
 
 In this lab, we will go through the process of writing our own vAccel plugin
-that implements the `vaccel_noop` that we used in our Hello, World example in
+that implements the `vaccel_noop` that we used in our "Hello, world" example in
 [lab1](https://github.com/nubificus/vaccel-tutorials/blob/main/lab1/README.md).
 The purpose of this exercise is to showcase the rationale of the plugin/backend
 system and the simplicity of adding a new plugin to vAccel.
@@ -30,7 +30,7 @@ we replace `noop` with the name of our choosing (`helloworld`) so we come up wit
 the following directory structure:
 
 ```
-$ tree -L 1 plugins/helloworld
+tree -L 1 plugins/helloworld
 plugins/helloworld
 ├── CMakeLists.txt
 └── vaccel.c
@@ -40,17 +40,14 @@ We need to change the contents of `plugins/helloworld/CMakeLists.txt` to reflect
 the `noop` to `helloworld` change:
 
 ```cmake
-set(include_dirs ${CMAKE_SOURCE_DIR}/src)
+set(include_dirs ${CMAKE_SOURCE_DIR}/src/include)
 set(SOURCES vaccel.c ${include_dirs}/vaccel.h ${include_dirs}/plugin.h)
-set_property(SOURCE ${include_dirs}/vaccel.h PROPERTY GENERATED 1)
 
 add_library(vaccel-helloworld SHARED ${SOURCES})
 target_include_directories(vaccel-helloworld PRIVATE ${include_dirs})
 
 # Setup make install
 install(TARGETS vaccel-helloworld DESTINATION "${lib_path}")
-
-set(include_dirs ${CMAKE_SOURCE_DIR}/src/include )
 ```
 
 Similarly, we replace the plugin implementation with our own in `vaccel.c`,
@@ -59,6 +56,9 @@ adding a simple message:
 ```C
 #include <stdio.h>
 #include <plugin.h>
+
+#include <error.h>
+#include <ops/vaccel_ops.h>
 
 static int helloworld(struct vaccel_session *session)
 {
@@ -124,28 +124,28 @@ We see that a new plugin is now available, `libvaccel-helloworld.so`. Lets use t
 one instead of the `noop` one!
 
 ```
-$ LD_LIBRARY_PATH=src VACCEL_DEBUG_LEVEL=4 VACCEL_BACKENDS=./plugins/helloworld/libvaccel-helloworld.so ./noop
+LD_LIBRARY_PATH=src VACCEL_DEBUG_LEVEL=4 VACCEL_BACKENDS=./plugins/helloworld/libvaccel-helloworld.so ./noop
 ```
 should return:
 ```
-2021.04.09-12:40:45.86 - <debug> Initializing vAccel
-2021.04.09-12:40:45.86 - <debug> Registered plugin helloworld
-2021.04.09-12:40:45.86 - <debug> Registered function noop from plugin helloworld
-2021.04.09-12:40:45.86 - <debug> Loaded plugin helloworld from ./plugins/helloworld/libvaccel-helloworld.so
-2021.04.09-12:40:45.86 - <debug> session:1 New session
+2025.01.02-12:34:20.48 - <debug> Initializing vAccel
+2025.01.02-12:34:20.48 - <debug> Registered plugin helloworld
+2025.01.02-12:34:20.48 - <debug> Registered function noop from plugin helloworld
+2025.01.02-12:34:20.48 - <debug> Loaded plugin helloworld from ./plugins/helloworld/libvaccel-helloworld.so
+2025.01.02-12:34:20.48 - <debug> session:1 New session
 Initialized session with id: 1
-2021.04.09-12:40:45.86 - <debug> session:1 Looking for plugin implementing noop
-2021.04.09-12:40:45.86 - <debug> Found implementation in helloworld plugin
+2025.01.02-12:34:20.48 - <debug> session:1 Looking for plugin implementing noop
+2025.01.02-12:34:20.48 - <debug> Found implementation in helloworld plugin
 Calling vaccel-helloworld for session 1
 _______________________________________________________________
 
 This is the helloworld plugin, implementing the NOOP operation!
 ===============================================================
 
-2021.04.09-12:40:45.86 - <debug> session:1 Free session
-2021.04.09-12:40:45.86 - <debug> Shutting down vAccel
-2021.04.09-12:40:45.86 - <debug> Cleaning up plugins
-2021.04.09-12:40:45.86 - <debug> Unregistered plugin helloworld
+2025.01.02-12:34:20.48 - <debug> session:1 Free session
+2025.01.02-12:34:20.48 - <debug> Shutting down vAccel
+2025.01.02-12:34:20.48 - <debug> Cleaning up plugins
+2025.01.02-12:34:20.48 - <debug> Unregistered plugin helloworld
 ```
 
 ### Takeaway

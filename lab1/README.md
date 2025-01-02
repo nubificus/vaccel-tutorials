@@ -117,7 +117,7 @@ directory of vaccelrt, whereas the `-L` flag it tells it to look for
 Let's run our 'Hello, World' application:
 
 ```
-$ LD_LIBRARY_PATH=./src ./noop
+LD_LIBRARY_PATH=./src ./noop
 ```
 should return
 ```
@@ -129,19 +129,20 @@ Not what we expected. Let's enable vAccel runtime debugging, by setting the
 `VACCEL_DEBUG_LEVEL` environment variable, to shed a bit of light:
 
 ```
-$ LD_LIBRARY_PATH=./src VACCEL_DEBUG_LEVEL=4  ./noop
+LD_LIBRARY_PATH=./src VACCEL_DEBUG_LEVEL=4  ./noop
 ```
 should return
 ```
-2021.04.09-09:09:03.39 - <debug> Initializing vAccel
-2021.04.09-09:09:03.39 - <debug> session:1 New session
+2025.01.02-11:45:37.79 - <debug> Initializing vAccel
+2025.01.02-11:45:37.79 - <debug> Created top-level rundir: /run/user/1009/vaccel.LT7Wev
+2025.01.02-11:45:37.79 - <debug> session:1 New session
 Initialized session with id: 1
-2021.04.09-09:09:03.39 - <debug> session:1 Looking for plugin implementing noop
-2021.04.09-09:09:03.39 - <warn> None of the loaded plugins implement noop
+2025.01.02-11:45:37.79 - <debug> session:1 Looking for plugin implementing noop
+2025.01.02-11:45:37.79 - <warn> None of the loaded plugins implement noop
 Could not run op: 95
-2021.04.09-09:09:03.39 - <debug> session:1 Free session
-2021.04.09-09:09:03.39 - <debug> Shutting down vAccel
-2021.04.09-09:09:03.39 - <debug> Cleaning up plugins
+2025.01.02-11:45:37.79 - <debug> session:1 Free session
+2025.01.02-11:45:37.79 - <debug> Shutting down vAccel
+2025.01.02-11:45:37.79 - <debug> Cleaning up plugins
 ```
 
 Ok better!
@@ -167,24 +168,24 @@ variable `VACCEL_BACKENDS`. When we execute the example and specify the
 plugin to use we get the following:
 
 ```
-$ LD_LIBRARY_PATH=./src VACCEL_DEBUG_LEVEL=4 VACCEL_BACKENDS=./plugins/noop/libvaccel-noop.so  ./noop
+LD_LIBRARY_PATH=./src VACCEL_DEBUG_LEVEL=4 VACCEL_BACKENDS=./plugins/noop/libvaccel-noop.so  ./noop
 ```
 should return:
 
 ```
-2021.04.09-09:10:03.48 - <debug> Initializing vAccel
-2021.04.09-09:10:03.48 - <debug> Registered plugin noop
-2021.04.09-09:10:03.48 - <debug> Registered function noop from plugin noop
-2021.04.09-09:10:03.48 - <debug> Loaded plugin noop from ./plugins/noop/libvaccel-noop.so
-2021.04.09-09:10:03.48 - <debug> session:1 New session
+2025.01.02-11:46:17.41 - <debug> Initializing vAccel
+2025.01.02-11:46:17.41 - <debug> Registered plugin noop
+2025.01.02-11:46:17.41 - <debug> Registered function noop from plugin noop
+2025.01.02-11:46:17.41 - <debug> Loaded plugin noop from ./plugins/noop/libvaccel-noop.so
+2025.01.02-11:46:17.41 - <debug> session:1 New session
 Initialized session with id: 1
-2021.04.09-09:10:03.48 - <debug> session:1 Looking for plugin implementing noop
-2021.04.09-09:10:03.48 - <debug> Found implementation in noop plugin
+2025.01.02-11:46:17.41 - <debug> session:1 Looking for plugin implementing noop
+2025.01.02-11:46:17.41 - <debug> Found implementation in noop plugin
 Calling no-op for session 1
-2021.04.09-09:10:03.48 - <debug> session:1 Free session
-2021.04.09-09:10:03.48 - <debug> Shutting down vAccel
-2021.04.09-09:10:03.48 - <debug> Cleaning up plugins
-2021.04.09-09:10:03.48 - <debug> Unregistered plugin noop
+2025.01.02-11:46:17.41 - <debug> session:1 Free session
+2025.01.02-11:46:17.41 - <debug> Shutting down vAccel
+2025.01.02-11:46:17.41 - <debug> Cleaning up plugins
+2025.01.02-11:46:17.41 - <debug> Unregistered plugin noop
 ```
 
 ## Takeaway

@@ -28,7 +28,7 @@ That allows you to change your implementation, i.e. the binary you pass to
 
 Moreover, you can execute your application inside a VM transparently because
 the `virtio` plugin implements `vaccel_exec` for you, thus allowing you to run
-you code as if you were on the host.
+your code as if you were on the host.
 
 In this lab, we will go through using the vAccel `exec` operation to execute an
 arbitrary piece of code. The process is straightforward: we build a simple
@@ -65,7 +65,9 @@ cd vaccel-tutorial-code
 The directory tree is the following:
 
 ```
-$ tree -d .
+tree -d .
+```
+```
 .
 ├── app
 │   └── opencl_examples
@@ -87,7 +89,7 @@ make
 There should be two executables lying around in each of the example folders:
 
 ```
-$ find . -path ./CMakeFiles -prune -o -type f -executable
+find . -path ./CMakeFiles -prune -o -type f -executable
 ```
 
 ```
@@ -141,7 +143,6 @@ The patch needed for `opencl_examples` is provided
 In the opencl_examples directory simply run:
 
 ```
-cd ../
 patch -p1 < ../0001-Libify-vector_add.patch
 ```
 
@@ -155,7 +156,9 @@ make
 This produces a `libvector_add.so` object which exposes a vector_add operation:
 
 ```
-$ objdump -TC vector_add/libvector_add.so  | grep vector_add
+objdump -TC vector_add/libvector_add.so  | grep vector_add
+```
+```
 vector_add/libvector_add.so:     file format elf64-x86-64
 0000000000012a86 g    DF .text	0000000000000b83  Base        vector_add
 ```
@@ -172,14 +175,18 @@ make wrapper
 Now, if we execute it we get the following:
 
 ```
-$ ./wrapper 
+./wrapper 
+```
+```
 ./wrapper: error while loading shared libraries: libvector_add.so: cannot open shared object file: No such file or directory
 ```
 
 This is because we haven't specified where the system can find the shared library containing the `vector_add` implementation. If we set `LD_LIBRARY_PATH` accordingly and re-run, we get the following:
 
 ```
-$ LD_LIBRARY_PATH=opencl_examples/build/vector_add/ ./wrapper 
+LD_LIBRARY_PATH=opencl_examples/build/vector_add/ ./wrapper 
+```
+```
 Using platform: Intel(R) OpenCL HD Graphics
 Using device: Intel(R) Graphics [0x9b41]
  result: 
@@ -243,6 +250,8 @@ We now point the `LD_LIBRARY_PATH` variable to the path where `libwrapper.so` ex
 
 ```
 LD_LIBRARY_PATH=.:../vaccelrt/build/src ./wrapper-vaccel 
+```
+```
 Initialized session with id: 1
 Could not run op: 95
 ```
@@ -252,7 +261,7 @@ to `vaccel_exec` to. We use the `VACCEL_BACKENDS` enviromental variable.  After
 we've built vAccel and the vAccel exec plugin, we can run our wrapper:
 
 ```
-$ LD_LIBRARY_PATH=.:../vaccelrt/build/src/ VACCEL_BACKENDS=../vaccelrt/build/plugins/exec/libvaccel-exec.so ./wrapper-vaccel
+LD_LIBRARY_PATH=.:../vaccelrt/build/src/ VACCEL_BACKENDS=../vaccelrt/build/plugins/exec/libvaccel-exec.so ./wrapper-vaccel
 ```
 
 ```
@@ -270,29 +279,29 @@ wrapper library.
 If we enable debug, we can see what's going on under the hood:
 
 ```
-$ VACCEL_DEBUG_LEVEL=4 LD_LIBRARY_PATH=.:../vaccelrt/build/src/ VACCEL_BACKENDS=../vaccelrt/build/plugins/exec/libvaccel-exec.so ./wrapper-vaccel
+VACCEL_DEBUG_LEVEL=4 LD_LIBRARY_PATH=.:../vaccelrt/build/src/ VACCEL_BACKENDS=../vaccelrt/build/plugins/exec/libvaccel-exec.so ./wrapper-vaccel
 ```
 ``` 
-2021.04.09-12:16:15.11 - <debug> Initializing vAccel
-2021.04.09-12:16:15.11 - <debug> Registered plugin exec
-2021.04.09-12:16:15.11 - <debug> Registered function noop from plugin exec
-2021.04.09-12:16:15.11 - <debug> Registered function exec from plugin exec
-2021.04.09-12:16:15.11 - <debug> Loaded plugin exec from ../vaccelrt/build/plugins/exec/libvaccel-exec.so
-2021.04.09-12:16:15.11 - <debug> session:1 New session
+2025.01.02-13:35:21.63 - <debug> Initializing vAccel
+2025.01.02-13:35:21.63 - <debug> Registered plugin exec
+2025.01.02-13:35:21.63 - <debug> Registered function noop from plugin exec
+2025.01.02-13:35:21.63 - <debug> Registered function exec from plugin exec
+2025.01.02-13:35:21.63 - <debug> Loaded plugin exec from ../vaccelrt/build/plugins/exec/libvaccel-exec.so
+2025.01.02-13:35:21.63 - <debug> session:1 New session
 Initialized session with id: 1
-2021.04.09-12:16:15.11 - <debug> session:1 Looking for plugin implementing exec
-2021.04.09-12:16:15.11 - <debug> Found implementation in exec plugin
-2021.04.09-12:16:15.11 - <debug> Calling exec for session 1
-2021.04.09-12:16:15.11 - <debug> [exec] library: opencl_examples/build/vector_add/libvector_add.so
-2021.04.09-12:16:15.12 - <debug> [exec] symbol: vector_add
+2025.01.02-13:35:21.63 - <debug> session:1 Looking for plugin implementing exec
+2025.01.02-13:35:21.63 - <debug> Found implementation in exec plugin
+2025.01.02-13:35:21.63 - <debug> Calling exec for session 1
+2025.01.02-13:35:21.63 - <debug> [exec] library: opencl_examples/build/vector_add/libvector_add.so
+2025.01.02-13:35:21.63 - <debug> [exec] symbol: vector_add
 Using platform: Intel(R) OpenCL HD Graphics
 Using device: Intel(R) Graphics [0x9b41]
  result: 
 0 2 4 3 5 7 6 8 10 9 
-2021.04.09-12:16:15.44 - <debug> session:1 Free session
-2021.04.09-12:16:15.44 - <debug> Shutting down vAccel
-2021.04.09-12:16:15.44 - <debug> Cleaning up plugins
-2021.04.09-12:16:15.44 - <debug> Unregistered plugin exec
+2025.01.02-13:35:21.71 - <debug> session:1 Free session
+2025.01.02-13:35:21.71 - <debug> Shutting down vAccel
+2025.01.02-13:35:21.71 - <debug> Cleaning up plugins
+2025.01.02-13:35:21.71 - <debug> Unregistered plugin exec
 ```
 
 First vAccel is initialized. Then the libvaccel-exec.so plugin is registered,
@@ -359,7 +368,7 @@ cp opencl_examples/build/vector_add/libvector_add.so /tmp
 and run our program:
 
 ```
-$ LD_LIBRARY_PATH=.:../vaccelrt/build/src/ VACCEL_BACKENDS=../vaccelrt/build/plugins/exec/libvaccel-exec.so ./wrapper-args-vaccel
+LD_LIBRARY_PATH=.:../vaccelrt/build/src/ VACCEL_BACKENDS=../vaccelrt/build/plugins/exec/libvaccel-exec.so ./wrapper-args-vaccel
 ```
 
 ```
