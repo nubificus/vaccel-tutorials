@@ -4,45 +4,24 @@ In this short tutorial, we will go through the build process of the vAccel
 runtime and how you can run the `hello-world` vAccel application using one
 of the available back-end plugins.
 
-## Building vAccelRT
+## Building vAccel
 
-### Get the code
+### Installing the core runtime
 
-Τhroughout the labs we usually refer to a helper repo: [tutorials-code-repo](https://github.com/nubificus/vaccel-tutorial-code). We have included the [vAccelRT](https://github.com/cloudkernels/vaccelrt/) as a submodule inside the helper repo for the purposes of these labs. If you only want to try out lab1/lab2, then you can clone the [cloudkernels/vaccelrt](https://github.com/cloudkernels/vaccelrt/) directly.
+Build and install the core runtime library from the latest release of the [vAccel](https://github.com/nubificus/vaccel) repository (steps 1 and 2).
 
+Use the `--prefix=<path>` option in the meson setup command to specify a particular installation path.
+
+Meson setup returns the following configuration info which shows that none of the plugins are enabled. In the next step will see how to enable plugins and run a simple application.
 ```
-git clone --recursive https://github.com/nubificus/vaccel-tutorial-code.git
-cd vaccel-tutorial-code/vaccelrt
-```
-
-### Build the core runtime
-
-Create a build directory and prepare the relevant files for building (including
-just the examples):
-
-```
-mkdir build
-cd build
-cmake ../
-```
-
-Build the source:
-
-```
-make
-```
-
-You should find the vAccel runtime library under `src`
-
-```
-$ tree -L 1 src/
-src/
-├── CMakeFiles
-├── cmake_install.cmake
-├── libvaccel.so
-├── Makefile
-└── vaccel.pc
-
+...
+ Configuration
+    Build the exec plugin           : NO
+    Build the no-op debugging plugin: NO
+    Build the mbench plugin         : NO
+    Build the examples              : NO
+    Enable testing                  : NO
+...
 ```
 
 ## vAccel Hello World!
@@ -54,70 +33,42 @@ As you have probably guessed the `vaccel_noop` function is a no-op, it does not
 require any actual acceleration, but it's useful for demonstration and debugging
 purposes, so we will be using it along the course of this and following labs.
 
-Here is the code which you can also find in the
-[noop](https://github.com/cloudkernels/vaccelrt/blob/master/examples/noop.c)
-example of the vAccelRT repo:
-
-```C
-#include <stdlib.h>
-#include <stdio.h>
-
-#include <vaccel.h>
-
-int main()
-{
-	int ret;
-	struct vaccel_session sess;
-
-	ret = vaccel_sess_init(&sess, 0);
-	if (ret != VACCEL_OK) {
-		fprintf(stderr, "Could not initialize session\n");
-		return 1;
-	}
-
-	printf("Initialized session with id: %u\n", sess.session_id);
-
-	ret = vaccel_noop(&sess);
-	if (ret)
-		fprintf(stderr, "Could not run op: %d\n", ret);
-
-	if (vaccel_sess_free(&sess) != VACCEL_OK) {
-		fprintf(stderr, "Could not clear session\n");
-		return 1;
-	}
-
-	return ret;
-}
-```
+You can find the code [here](https://github.com/nubificus/vaccel/blob/main/src/ops/noop.c). The `vaccel_noop` function calls the implementation the `noop_noop` function as implemented by the no-op plugin.
 
 All vAccel operations are performed in the context of a "user" session, so the
 first thing that the program does is creating a new `vaccel_session`.
 Next, it performs the actual operation `vaccel_noop` and closes the session.
 
-### Building an application
+### Building plugin and application
 
-In order to build our "Hello, world" example we need to link it against
-`libvaccel` which depends on `libdl`.
-
-We put the above snippet in a file named `noop.c`, compile it and link
-it, and this is provided in the examples directory as seen below.
-
-
+To run the hello world example, we need first to build the no-op plugin. The `-Dexamples=enabled` option build the available vAccel example. The `-Dplugin-noop=enabled` option build the no-op plugin.
 ```
-gcc -I ../src/include/ -I ../third-party/slog/src ../examples/noop.c -c
-gcc -L src noop.o -o noop -lvaccel -ldl
+meson setup --buildtype=release build --prefix=<path> -Dexamples=enabled -Dplugin-noop=enabled --reconfigure
+```
+Or:
+```
+meson setup --buildtype=release build --prefix=<path> -Dauto_features=enabled -Dplugin-noop=enabled --reconfigure
 ```
 
-The `-I` flag above tells gcc to look for vaccel.h header file under the src
-directory of vaccelrt, whereas the `-L` flag it tells it to look for
-`libvaccel.so` under `src` in the build directory.
+To view all available options and their values, you can use:
+```
+meson configure build
+```
+
+Then, compile and install the project after the changes.
+```
+meson compile -C build
+meson install -C build
+```
+
+Now, you should find all the vAccel examples, including `noop`  under the `<path>/bin` directory.
 
 ### Running the application
 
-Let's run our 'Hello, World' application:
+Let's move to the `<path>` directory to run our 'Hello, World' application:
 
 ```
-LD_LIBRARY_PATH=./src ./noop
+LD_LIBRARY_PATH=./lib/x86_64-linux-gnu ./bin/noop
 ```
 should return
 ```
@@ -129,20 +80,22 @@ Not what we expected. Let's enable vAccel runtime debugging, by setting the
 `VACCEL_DEBUG_LEVEL` environment variable, to shed a bit of light:
 
 ```
-LD_LIBRARY_PATH=./src VACCEL_DEBUG_LEVEL=4  ./noop
+LD_LIBRARY_PATH=./lib/x86_64-linux-gnu VACCEL_DEBUG_LEVEL=4  ./bin/noop
 ```
 should return
 ```
-2025.01.02-11:45:37.79 - <debug> Initializing vAccel
-2025.01.02-11:45:37.79 - <debug> Created top-level rundir: /run/user/1009/vaccel.LT7Wev
-2025.01.02-11:45:37.79 - <debug> session:1 New session
+2025.01.07-11:58:35.17 - <debug> Initializing vAccel
+2025.01.07-11:58:35.17 - <info> vAccel 0.6.1-164-dcf00bfd
+2025.01.07-11:58:35.17 - <debug> Created top-level rundir: /run/user/1009/vaccel/2y58Fn
+2025.01.07-11:58:35.17 - <debug> New rundir for session 1: /run/user/1009/vaccel/2y58Fn/session.1
+2025.01.07-11:58:35.17 - <debug> Initialized session 1
 Initialized session with id: 1
-2025.01.02-11:45:37.79 - <debug> session:1 Looking for plugin implementing noop
-2025.01.02-11:45:37.79 - <warn> None of the loaded plugins implement noop
+2025.01.07-11:58:35.17 - <debug> session:1 Looking for plugin implementing noop
+2025.01.07-11:58:35.17 - <warn> None of the loaded plugins implement noop
 Could not run op: 95
-2025.01.02-11:45:37.79 - <debug> session:1 Free session
-2025.01.02-11:45:37.79 - <debug> Shutting down vAccel
-2025.01.02-11:45:37.79 - <debug> Cleaning up plugins
+2025.01.07-11:58:35.17 - <debug> Released session 1
+2025.01.07-11:58:35.17 - <debug> Shutting down vAccel
+2025.01.07-11:58:35.17 - <debug> Cleaning up plugins
 ```
 
 Ok better!
@@ -159,33 +112,59 @@ vAccel session `1` is freed and the execution exits.
 Let's go back and build a plugin that implements this operation, `noop`:
 
 ```
-cmake ../ -DBUILD_PLUGIN_NOOP=ON
-make
+meson setup --buildtype=release build --prefix=$HOME/binaries/test/vaccel -Dplugin-noop=enabled --reconfigure
 ```
 
 To run our example using the `noop` plugin, we need to set the environment
 variable `VACCEL_BACKENDS`. When we execute the example and specify the
-plugin to use we get the following:
+plugin under the `<path>` directory:
 
 ```
-LD_LIBRARY_PATH=./src VACCEL_DEBUG_LEVEL=4 VACCEL_BACKENDS=./plugins/noop/libvaccel-noop.so  ./noop
+LD_LIBRARY_PATH=./lib/x86_64-linux-gnu VACCEL_DEBUG_LEVEL=4 VACCEL_BACKENDS=./lib/x86_64-linux-gnu/libvaccel-noop.so ./bin/noop
 ```
-should return:
+we get the following output:
 
 ```
-2025.01.02-11:46:17.41 - <debug> Initializing vAccel
-2025.01.02-11:46:17.41 - <debug> Registered plugin noop
-2025.01.02-11:46:17.41 - <debug> Registered function noop from plugin noop
-2025.01.02-11:46:17.41 - <debug> Loaded plugin noop from ./plugins/noop/libvaccel-noop.so
-2025.01.02-11:46:17.41 - <debug> session:1 New session
+2025.01.07-11:59:52.72 - <debug> Initializing vAccel
+2025.01.07-11:59:52.72 - <info> vAccel 0.6.1-166-3cfa48b7
+2025.01.07-11:59:52.72 - <debug> Created top-level rundir: /run/user/1009/vaccel/4pv5d6
+2025.01.07-11:59:52.72 - <info> Registered plugin noop 0.6.1-166-3cfa48b7
+2025.01.07-11:59:52.72 - <debug> Registered function noop from plugin noop
+2025.01.07-11:59:52.72 - <debug> Registered function sgemm from plugin noop
+2025.01.07-11:59:52.72 - <debug> Registered function image classification from plugin noop
+2025.01.07-11:59:52.72 - <debug> Registered function image detection from plugin noop
+2025.01.07-11:59:52.72 - <debug> Registered function image segmentation from plugin noop
+2025.01.07-11:59:52.72 - <debug> Registered function image pose estimation from plugin noop
+2025.01.07-11:59:52.72 - <debug> Registered function image depth estimation from plugin noop
+2025.01.07-11:59:52.72 - <debug> Registered function exec from plugin noop
+2025.01.07-11:59:52.72 - <debug> Registered function TensorFlow session load from plugin noop
+2025.01.07-11:59:52.72 - <debug> Registered function TensorFlow session run from plugin noop
+2025.01.07-11:59:52.72 - <debug> Registered function TensorFlow session delete from plugin noop
+2025.01.07-11:59:52.72 - <debug> Registered function MinMax from plugin noop
+2025.01.07-11:59:52.72 - <debug> Registered function Array copy from plugin noop
+2025.01.07-11:59:52.72 - <debug> Registered function Vector Add from plugin
+noop
+2025.01.07-11:59:52.72 - <debug> Registered function Parallel acceleration from plugin noop
+2025.01.07-11:59:52.72 - <debug> Registered function Matrix multiplication from plugin noop
+2025.01.07-11:59:52.72 - <debug> Registered function Exec with resource from plugin noop
+2025.01.07-11:59:52.72 - <debug> Registered function Torch jitload_forward function from plugin noop
+2025.01.07-11:59:52.72 - <debug> Registered function Torch SGEMM from plugin noop
+2025.01.07-11:59:52.72 - <debug> Registered function OpenCV Generic from plugin noop
+2025.01.07-11:59:52.72 - <debug> Registered function TensorFlow Lite session load from plugin noop
+2025.01.07-11:59:52.72 - <debug> Registered function TensorFlow Lite session run from plugin noop
+2025.01.07-11:59:52.72 - <debug> Registered function TensorFlow Lite session delete from plugin noop
+2025.01.07-11:59:52.72 - <debug> Loaded plugin noop from ./lib/x86_64-linux-gnu/libvaccel-noop.so
+2025.01.07-11:59:52.72 - <debug> New rundir for session 1: /run/user/1009/vaccel/4pv5d6/session.1
+2025.01.07-11:59:52.72 - <debug> Initialized session 1
 Initialized session with id: 1
-2025.01.02-11:46:17.41 - <debug> session:1 Looking for plugin implementing noop
-2025.01.02-11:46:17.41 - <debug> Found implementation in noop plugin
-Calling no-op for session 1
-2025.01.02-11:46:17.41 - <debug> session:1 Free session
-2025.01.02-11:46:17.41 - <debug> Shutting down vAccel
-2025.01.02-11:46:17.41 - <debug> Cleaning up plugins
-2025.01.02-11:46:17.41 - <debug> Unregistered plugin noop
+2025.01.07-11:59:52.72 - <debug> session:1 Looking for plugin implementing noop
+2025.01.07-11:59:52.72 - <debug> Returning func from hint plugin noop
+2025.01.07-11:59:52.72 - <debug> Found implementation in noop plugin
+2025.01.07-11:59:52.72 - <debug> [noop] Calling no-op for session 1
+2025.01.07-11:59:52.72 - <debug> Released session 1
+2025.01.07-11:59:52.72 - <debug> Shutting down vAccel
+2025.01.07-11:59:52.72 - <debug> Cleaning up plugins
+2025.01.07-11:59:52.72 - <debug> Unregistered plugin noop
 ```
 
 ## Takeaway
