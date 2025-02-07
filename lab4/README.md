@@ -10,9 +10,12 @@ In this lab, we go through the process of calling a vAccel operation in a
 lightweight Virtual Machine and running the code in the Host. To achieve this,
 we need some kind of transport layer that forwards the relevant calls from the
 VM to the Host where the actual execution is going to be triggered. vAccel
-supports a number of ways to do this; in this lab we are going to use vAccel's
-`virtio` plugin.
+supports a number of ways to do this; in this lab we are going to use 
+	1. vAccel's [rpc](https://github.com/nubificus/vaccel-plugin-rpc) plugin and
+	2. vAccel's [virtio](https://github.com/nubificus/vaccel-plugin-virtio) plugin.
 
+The `rpc` plugin used to send commands to a QEMU instance running on a remote server. We are using
+RPC within QEMU-emulated virtual machines for VM-to-host comminication.
 The `virtio` plugin requires support from the VMM. We have ported the necessary
 functionality to two popular VMMs: QEMU/KVM and AWS Firecracker.
 
@@ -22,6 +25,93 @@ guest to do the simple vector add operation we saw in
 we've completed lab4 and we are in the [helper
 repo](https://github.com/nubificus/vaccel-tutorial-code) base directory.
 
+# vAccel rpc plugin within QEMU VM
+
+## Build vAccel for host
+```
+git clone git@github.com:nubificus/vaccel
+meson setup -Dauto_features=enabled build
+meson compile -C build
+meson install -C build
+```
+
+## Build vAccel for guest
+
+### Download artifacts 
+```
+TODO: add link
+```
+### Mount guest fs
+Under the artifacts folder:
+```
+mkdir /tmp/vaccel-guest
+mount rootfs.img /tmp/vaccel-guest
+```
+
+### Build vAccel and vAccel-rpc for guest fs
+Under the `vaccel` directory:
+```
+meson setup -Dauto_features=enabled --prefix=/tmp/vaccel-guest/usr/local build-guest
+meson compile -C build-guest
+meson install -C build-guest
+```
+
+Clone and install `vaccel-plugin-rpc` for guest fs:
+```
+git clone git@github.com:nubificus/vaccel-plugin-rpc.git
+cd vaccel-plugin-rpc
+git submodule update --init
+meson setup --prefix=/tmp/vaccel-guest/usr/local build-guest
+meson compile -C build-guest
+meson install -C build-guest
+```
+
+Unmount guest fs:
+```
+umount /tmp/vaccel-guest
+```
+
+### Build vAccel-rpc for host
+Under the `vaccel-plugin-rpc` folder, build the repository for the host by setting `--prefix=`
+option to vaccel installation path on the following meson setup command.
+```
+meson setup -Drpc-agent=enabled build-agent
+meson compile -C build-agent
+meson install -C build-agent
+```
+
+### Run guest
+Under the artifacts folder:
+```
+qemu-system-x86_64 -nographic -nodefaults -cpu host -enable-kvm     -kernel bzImage-6.1.112-amd64     -append "console=ttyS0 earlyprintk=ttyS0 root=/dev/vda rw "     -serial stdio     -drive if=none,id=rootfs,file=rootfs.img,format=raw,cache=none     -device virtio-blk,drive=rootfs     -device vhost-vsock-pci,id=vhost-vsock-pci0,guest-cid=42
+```
+
+Note: You might need to edit `/etc/fstab` to remove the 9p fs.
+Also, setup the vars:
+```
+export VACCEL_BACKENDS=/usr/local/lib/x86_64-linux-gnu/libvaccel-rpc.so
+export VACCEL_DEBUG_LEVEL=4
+export VACCEL_RPC_ADDRESS=vsock://2:2048
+```
+
+### Run agent on host
+On a second terminal under the installation path of vaccel and vaccel-rpc-agent for host:
+```
+export VACCEL_BACKENDS=<path>/lib/x86_64-linux-gnu/libvaccel-noop.so
+export VACCEL_DEBUG_LEVEL=4
+export VACCEL_RPC_ADDRESS=vsock://2:2048
+export LD_LIBRARY_PATH=<path>/lib/x86_64-linux-gnu
+./bin/vaccel-rpc-agent -a $VACCEL_RPC_ADDRESS
+```
+
+### Run an application on guest
+We are ready to run an application on guest!
+```
+./bin/classify share/vaccel/images/example.jpg 1
+```
+
+###########################################################################
+# vAccel virtio plugin
 ## Booting a VM
 
 To boot a VM we need to get the VMM binary, a linux kernel and a rootfs image.
@@ -31,6 +121,7 @@ repo](https://github.com/nubificus/fc-x86-guest-build/releases/latest). Go
 ahead and fetch them locally:
 
 ```
+TODO: update links
 # get latest release
 FC_RELEASE=`curl --silent "https://api.github.com/repos/cloudkernels/firecracker/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/'`
 ASSETS_RELEASE=`curl --silent "https://api.github.com/repos/nubificus/fc-x86-guest-build/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/'`
