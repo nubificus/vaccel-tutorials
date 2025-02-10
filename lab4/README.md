@@ -25,92 +25,73 @@ guest to do the simple vector add operation we saw in
 we've completed lab4 and we are in the [helper
 repo](https://github.com/nubificus/vaccel-tutorial-code) base directory.
 
-# vAccel rpc plugin within QEMU VM
+# vAccel rpc plugin
 
-## Build vAccel for host
+## Build vAccel and vAccel-rpc plugin
+
 ```
 git clone git@github.com:nubificus/vaccel
+cd vaccel
 meson setup -Dauto_features=enabled build
 meson compile -C build
 meson install -C build
 ```
 
-## Build vAccel for guest
-
-### Download artifacts 
-```
-TODO: add link
-```
-### Mount guest fs
-Under the artifacts folder:
-```
-mkdir /tmp/vaccel-guest
-mount rootfs.img /tmp/vaccel-guest
-```
-
-### Build vAccel and vAccel-rpc for guest fs
-Under the `vaccel` directory:
-```
-meson setup -Dauto_features=enabled --prefix=/tmp/vaccel-guest/usr/local build-guest
-meson compile -C build-guest
-meson install -C build-guest
-```
-
-Clone and install `vaccel-plugin-rpc` for guest fs:
+Clone and install `vaccel-plugin-rpc`:
 ```
 git clone git@github.com:nubificus/vaccel-plugin-rpc.git
 cd vaccel-plugin-rpc
 git submodule update --init
-meson setup --prefix=/tmp/vaccel-guest/usr/local build-guest
-meson compile -C build-guest
-meson install -C build-guest
+meson setup -Drpc-agent=enabled build
+meson compile -C build
+meson install -C build
+```
+## Run agent on host
+```
+export VACCEL_BACKENDS=/usr/local/lib/x86_64-linux-gnu/libvaccel-noop.so
+export VACCEL_DEBUG_LEVEL=4
+export ADDRESS=tcp://127.0.0.1:65500
+
+vaccel-rpc-agent -a "${ADDRESS}"
 ```
 
-Unmount guest fs:
-```
-umount /tmp/vaccel-guest
-```
-
-### Build vAccel-rpc for host
-Under the `vaccel-plugin-rpc` folder, build the repository for the host by setting `--prefix=`
-option to vaccel installation path on the following meson setup command.
-```
-meson setup -Drpc-agent=enabled build-agent
-meson compile -C build-agent
-meson install -C build-agent
-```
-
-### Run guest
-Under the artifacts folder:
-```
-qemu-system-x86_64 -nographic -nodefaults -cpu host -enable-kvm     -kernel bzImage-6.1.112-amd64     -append "console=ttyS0 earlyprintk=ttyS0 root=/dev/vda rw "     -serial stdio     -drive if=none,id=rootfs,file=rootfs.img,format=raw,cache=none     -device virtio-blk,drive=rootfs     -device vhost-vsock-pci,id=vhost-vsock-pci0,guest-cid=42
-```
-
-Note: You might need to edit `/etc/fstab` to remove the 9p fs.
-Also, setup the vars:
+## Run an application on guest
 ```
 export VACCEL_BACKENDS=/usr/local/lib/x86_64-linux-gnu/libvaccel-rpc.so
-export VACCEL_DEBUG_LEVEL=4
-export VACCEL_RPC_ADDRESS=vsock://2:2048
+export VACCEL_RPC_ADDRESS=tcp://127.0.0.1:65500
+
+classify /usr/local/share/vaccel/images/example.jpg 1
 ```
 
-### Run agent on host
-On a second terminal under the installation path of vaccel and vaccel-rpc-agent for host:
+The output on guest is:
 ```
-export VACCEL_BACKENDS=<path>/lib/x86_64-linux-gnu/libvaccel-noop.so
-export VACCEL_DEBUG_LEVEL=4
-export VACCEL_RPC_ADDRESS=vsock://2:2048
-export LD_LIBRARY_PATH=<path>/lib/x86_64-linux-gnu
-./bin/vaccel-rpc-agent -a $VACCEL_RPC_ADDRESS
+Initialized session with id: 1
+classification tags: This is a dummy classification tag!
 ```
 
-### Run an application on guest
-We are ready to run an application on guest!
+While on host:
 ```
-./bin/classify share/vaccel/images/example.jpg 1
+...
+2025.02.10-13:32:25.73 - <debug> New rundir for session 1: /run/user/1009/vaccel/fPYHwd/session.1
+2025.02.10-13:32:25.73 - <debug> Initialized session 1
+[2025-02-10T13:32:25Z INFO  vaccel_rpc_agent::session] Created session 1
+[2025-02-10T13:32:25Z INFO  vaccel_rpc_agent::ops::genop] Genop session 1
+2025.02.10-13:32:25.73 - <debug> session:1 Looking for plugin implementing image classification
+2025.02.10-13:32:25.73 - <debug> Returning func from hint plugin noop
+2025.02.10-13:32:25.73 - <debug> Found implementation in noop plugin
+2025.02.10-13:32:25.73 - <debug> [noop] Calling Image classification for session 1
+2025.02.10-13:32:25.73 - <debug> [noop] Dumping arguments for Image classification:
+2025.02.10-13:32:25.73 - <debug> [noop] len_img: 79281
+2025.02.10-13:32:25.73 - <debug> [noop] len_out_text: 512
+2025.02.10-13:32:25.73 - <debug> [noop] len_out_imgname: 512
+2025.02.10-13:32:25.73 - <debug> [noop] will return a dummy result
+2025.02.10-13:32:25.73 - <debug> [noop] will return a dummy result
+2025.02.10-13:32:25.82 - <debug> Released session 1
+[2025-02-10T13:32:25Z INFO  vaccel_rpc_agent::session] Destroyed session 1
 ```
 
 ###########################################################################
+NOTE: The following instructions are a work in progress.
 # vAccel virtio plugin
 ## Booting a VM
 
