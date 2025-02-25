@@ -107,7 +107,9 @@ find . -path ./CMakeFiles -prune -o -type f -executable
 The part we're interested in is the `vector add` executable, so lets run it!
 
 ```
-$ ./vector_add/ocl_vector_add 
+./vector_add/ocl_vector_add 
+```
+```
 Using platform: Intel(R) OpenCL HD Graphics
 Using device: Intel(R) Graphics [0x9b41]
  result: 
@@ -140,7 +142,7 @@ The patch needed for `opencl_examples` is provided
 
 >*TODO: Maybe explain what these patches are*
 
-In the opencl_examples directory simply run:
+In the `opencl_examples` directory simply run:
 
 ```
 patch -p1 < ../0001-Libify-vector_add.patch
@@ -160,7 +162,7 @@ objdump -TC vector_add/libvector_add.so  | grep vector_add
 ```
 ```
 vector_add/libvector_add.so:     file format elf64-x86-64
-0000000000012a86 g    DF .text	0000000000000b83  Base        vector_add
+0000000000012ba2 g    DF .text  0000000000000bb6  Base        vector_add
 ```
 
 To verify the library works as expected, we build a [small program](https://github.com/nubificus/vaccel-tutorial-code/blob/main/app/wrapper.c) that calls it. Let's navigate to the `app/` folder in our tutorial repo and build it:
@@ -197,7 +199,7 @@ Aha! We have a library, `libvector_add.so`, a wrapper executable
 that calls this library, and we're a bit familiar with vAccel so lets glue
 these together! 
 
-### vAccelRT integration
+### vAccel integration
 
 To run abritrary function calls using vAccel, we need to use vAccel's operation
 `exec`. In short, `exec`, is a way to execute arbitrary operations, given an
@@ -223,15 +225,14 @@ To build the library and the wrapper program we need to have a build the
 [lab2](https://github.com/nubificus/vaccel-tutorials/tree/main/lab2) tutorials
 in this repo.
 
-In short:
+In short, in `vaccel` directory:
 ```
-cd ../vaccel
 meson setup --prefix=<path> -Dplugin-exec=enabled build --reconfigure
 meson compile -C build
 meson install -C build
 ```
 
-We build the library:
+We build the library in `vaccel-tutorial-code/app` directory:
 
 ```
 make libwrapper.so
@@ -254,11 +255,11 @@ Could not run op: 95
 ```
 
 This means that we need to tell vAccel which plugin we want to dispatch the call
-to `vaccel_exec` to. We use the `VACCEL_BACKENDS` enviromental variable.  After
+to `vaccel_exec` to. We use the `VACCEL_PLUGINS` enviromental variable.  After
 we've built vAccel and the vAccel exec plugin, we can run our wrapper:
 
 ```
-LD_LIBRARY_PATH=.:<path>/lib/x86_64-linux-gnu/ VACCEL_BACKENDS=<path>/lib/x86_64-linux-gnu/libvaccel-exec.so ./wrapper-vaccel
+LD_LIBRARY_PATH=.:<path>/lib/x86_64-linux-gnu/ VACCEL_PLUGINS=<path>/lib/x86_64-linux-gnu/libvaccel-exec.so ./wrapper-vaccel
 ```
 
 ```
@@ -276,34 +277,42 @@ wrapper library.
 If we enable debug, we can see what's going on under the hood:
 
 ```
-VACCEL_DEBUG_LEVEL=4 LD_LIBRARY_PATH=.:<path>/lib/x86_64-linux-gnu/ VACCEL_BACKENDS=<path>/lib/x86_64-linux-gnu/libvaccel-exec.so ./wrapper-vaccel
+VACCEL_LOG_LEVEL=4 LD_LIBRARY_PATH=.:<path>/lib/x86_64-linux-gnu/ VACCEL_PLUGINS=<path>/lib/x86_64-linux-gnu/libvaccel-exec.so ./wrapper-vaccel
 ```
 ``` 
-2025.01.13-09:26:42.86 - <debug> Initializing vAccel
-2025.01.13-09:26:42.86 - <info> vAccel 0.6.1-166-3cfa48b7-dirty
-2025.01.13-09:26:42.86 - <debug> Created top-level rundir: /run/user/1009/vaccel/16yH1l
-2025.01.13-09:26:42.86 - <info> Registered plugin exec 0.6.1-166-3cfa48b7-dirty
-2025.01.13-09:26:42.86 - <debug> Registered function noop from plugin exec
-2025.01.13-09:26:42.86 - <debug> Registered function exec from plugin exec
-2025.01.13-09:26:42.86 - <debug> Registered function Exec with resource from plugin exec
-2025.01.13-09:26:42.86 - <debug> Loaded plugin exec from /home/mgkeka/binaries/test/vaccel/lib/x86_64-linux-gnu/libvaccel-exec.so
-2025.01.13-09:26:42.86 - <debug> New rundir for session 1: /run/user/1009/vaccel/16yH1l/session.1
-2025.01.13-09:26:42.86 - <debug> Initialized session 1
+2025.02.25-11:42:06.66 - <debug> Initializing vAccel
+2025.02.25-11:42:06.66 - <info> vAccel 0.6.1-182-262677eb-dirty
+2025.02.25-11:42:06.66 - <debug> Config:
+2025.02.25-11:42:06.66 - <debug>   plugins = /home/mgkeka/binaries/vaccel/lib/x86_64-linux-gnu/libvaccel-exec.so
+2025.02.25-11:42:06.66 - <debug>   log_level = debug
+2025.02.25-11:42:06.66 - <debug>   log_file = (null)
+2025.02.25-11:42:06.66 - <debug>   profiling_enabled = false
+2025.02.25-11:42:06.66 - <debug>   version_ignore = false
+2025.02.25-11:42:06.66 - <debug> Created top-level rundir: /run/user/1009/vaccel/DPgNef
+2025.02.25-11:42:06.66 - <info> Registered plugin exec 0.6.1-182-262677eb-dirty
+2025.02.25-11:42:06.66 - <debug> Registered op noop from plugin exec
+2025.02.25-11:42:06.66 - <debug> Registered op exec from plugin exec
+2025.02.25-11:42:06.66 - <debug> Registered op exec_with_resource from plugin exec
+2025.02.25-11:42:06.66 - <debug> Loaded plugin exec from /home/mgkeka/binaries/vaccel/lib/x86_64-linux-gnu/libvaccel-exec.so
+2025.02.25-11:42:06.66 - <debug> New rundir for session 1: /run/user/1009/vaccel/DPgNef/session.1
+2025.02.25-11:42:06.66 - <debug> Initialized session 1
 Initialized session with id: 1
-2025.01.13-09:26:42.86 - <debug> session:1 Looking for plugin implementing exec
-2025.01.13-09:26:42.86 - <debug> Returning func from hint plugin exec
-2025.01.13-09:26:42.86 - <debug> Found implementation in exec plugin
-2025.01.13-09:26:42.86 - <debug> [exec] session:1 Calling exec
-2025.01.13-09:26:42.86 - <debug> [exec] Library: opencl_examples/build/vector_add/libvector_add.so
-2025.01.13-09:26:42.87 - <debug> [exec] Symbol: vector_add
+2025.02.25-11:42:06.66 - <debug> session:1 Looking for plugin implementing exec
+2025.02.25-11:42:06.66 - <debug> Returning func from hint plugin exec
+2025.02.25-11:42:06.66 - <debug> Found implementation in exec plugin
+2025.02.25-11:42:06.66 - <debug> [exec] session:1 Calling exec
+2025.02.25-11:42:06.66 - <debug> [exec] Library: opencl_examples/build/vector_add/libvector_add.so
+2025.02.25-11:42:06.66 - <debug> [exec] Symbol: vector_add
 Using platform: Portable Computing Language
 Using device: pthread-Intel Core Processor (Skylake, IBRS)
  result:
 0 2 4 3 5 7 6 8 10 9
-2025.01.13-09:26:42.94 - <debug> Released session 1
-2025.01.13-09:26:42.94 - <debug> Shutting down vAccel
-2025.01.13-09:26:42.94 - <debug> Cleaning up plugins
-2025.01.13-09:26:42.94 - <debug> Unregistered plugin exec
+2025.02.25-11:42:06.74 - <debug> Released session 1
+2025.02.25-11:42:06.74 - <debug> Cleaning up vAccel
+2025.02.25-11:42:06.74 - <debug> Cleaning up sessions
+2025.02.25-11:42:06.74 - <debug> Cleaning up resources
+2025.02.25-11:42:06.74 - <debug> Cleaning up plugins
+2025.02.25-11:42:06.74 - <debug> Unregistered plugin exec
 ```
 
 First vAccel is initialized. Then the libvaccel-exec.so plugin is registered,
@@ -370,7 +379,7 @@ cp opencl_examples/build/vector_add/libvector_add.so /tmp
 and run our program:
 
 ```
-LD_LIBRARY_PATH=.:<path>/lib/x86_64-linux-gnu/ VACCEL_BACKENDS=<path>/lib/x86_64-linux-gnu/libvaccel-exec.so ./wrapper-args-vaccel
+LD_LIBRARY_PATH=.:<path>/lib/x86_64-linux-gnu/ VACCEL_PLUGINS=<path>/lib/x86_64-linux-gnu/libvaccel-exec.so ./wrapper-args-vaccel
 ```
 
 ```
