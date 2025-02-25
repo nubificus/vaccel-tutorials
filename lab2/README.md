@@ -124,7 +124,7 @@ option('plugin-helloworld',
 Now we can build our new plugin, by specifying the new option we just added:
 
 ```
-meson setup build -Dplugin-helloworld --reconfigure
+meson setup -Dplugin-helloworld=enabled build --reconfigure
 meson compile -C build
 meson install -C build
 ```
@@ -132,49 +132,57 @@ meson install -C build
 Under the `<path>` directory we see that a new plugin is now available, `libvaccel-helloworld.so`. Lets use this one instead of the `noop` one!
 
 ```
-LD_LIBRARY_PATH=./lib/x86_64-linux-gnu/ VACCEL_DEBUG_LEVEL=4 VACCEL_BACKENDS=./lib/x86_64-linux-gnu/libvaccel-helloworld.so ./bin/noop
+LD_LIBRARY_PATH=./lib/x86_64-linux-gnu/ VACCEL_LOG_LEVEL=4 VACCEL_PLUGINS=./lib/x86_64-linux-gnu/libvaccel-helloworld.so ./bin/noop
 ```
 should return:
 ```
-2025.01.09-16:07:18.11 - <debug> Initializing vAccel
-2025.01.09-16:07:18.11 - <info> vAccel 0.6.1-166-3cfa48b7-dirty
-2025.01.09-16:07:18.11 - <debug> Created top-level rundir: /run/user/1009/vaccel/jRcbta
-2025.01.09-16:07:18.11 - <info> Registered plugin helloworld 0.6.1-166-3cfa48b7-dirty
-2025.01.09-16:07:18.11 - <debug> Registered function noop from plugin helloworld
-2025.01.09-16:07:18.11 - <debug> Registered function sgemm from plugin helloworld
-2025.01.09-16:07:18.11 - <debug> Registered function image classification from plugin helloworld
-2025.01.09-16:07:18.11 - <debug> Registered function image detection from plugin helloworld
-2025.01.09-16:07:18.11 - <debug> Registered function image segmentation from plugin helloworld
-2025.01.09-16:07:18.11 - <debug> Registered function image pose estimation from plugin helloworld
-2025.01.09-16:07:18.11 - <debug> Registered function image depth estimation from plugin helloworld
-2025.01.09-16:07:18.11 - <debug> Registered function exec from plugin helloworld
-2025.01.09-16:07:18.11 - <debug> Registered function TensorFlow session load from plugin helloworld
-2025.01.09-16:07:18.11 - <debug> Registered function TensorFlow session run from plugin helloworld
-2025.01.09-16:07:18.11 - <debug> Registered function TensorFlow session delete from plugin helloworld
-2025.01.09-16:07:18.11 - <debug> Registered function MinMax from plugin helloworld
-2025.01.09-16:07:18.11 - <debug> Registered function Array copy from plugin helloworld
-2025.01.09-16:07:18.11 - <debug> Registered function Vector Add from plugin helloworld
-2025.01.09-16:07:18.11 - <debug> Registered function Parallel acceleration from plugin helloworld
-2025.01.09-16:07:18.11 - <debug> Registered function Matrix multiplication from plugin helloworld
-2025.01.09-16:07:18.11 - <debug> Registered function Exec with resource from plugin helloworld
-2025.01.09-16:07:18.11 - <debug> Registered function Torch jitload_forward function from plugin helloworld
-2025.01.09-16:07:18.11 - <debug> Registered function Torch SGEMM from plugin helloworld
-2025.01.09-16:07:18.11 - <debug> Registered function OpenCV Generic from plugin helloworld
-2025.01.09-16:07:18.11 - <debug> Registered function TensorFlow Lite session load from plugin helloworld
-2025.01.09-16:07:18.11 - <debug> Registered function TensorFlow Lite session run from plugin helloworld
-2025.01.09-16:07:18.11 - <debug> Registered function TensorFlow Lite session delete from plugin helloworld
-2025.01.09-16:07:18.11 - <debug> Loaded plugin helloworld from ./lib/x86_64-linux-gnu/libvaccel-helloworld.so
-2025.01.09-16:07:18.11 - <debug> New rundir for session 1: /run/user/1009/vaccel/jRcbta/session.1
-2025.01.09-16:07:18.11 - <debug> Initialized session 1
+2025.02.25-10:57:20.36 - <debug> Initializing vAccel
+2025.02.25-10:57:20.36 - <info> vAccel 0.6.1-182-262677eb-dirty
+2025.02.25-10:57:20.36 - <debug> Config:
+2025.02.25-10:57:20.36 - <debug>   plugins = ./lib/x86_64-linux-gnu/libvaccel-helloworld.so
+2025.02.25-10:57:20.36 - <debug>   log_level = debug
+2025.02.25-10:57:20.36 - <debug>   log_file = (null)
+2025.02.25-10:57:20.36 - <debug>   profiling_enabled = false
+2025.02.25-10:57:20.36 - <debug>   version_ignore = false
+2025.02.25-10:57:20.36 - <debug> Created top-level rundir: /run/user/1009/vaccel/J8Y8QX
+2025.02.25-10:57:20.36 - <info> Registered plugin helloworld 0.6.1-182-262677eb-dirty
+2025.02.25-10:57:20.36 - <debug> Registered op noop from plugin helloworld
+2025.02.25-10:57:20.36 - <debug> Registered op blas_sgemm from plugin helloworld
+2025.02.25-10:57:20.36 - <debug> Registered op image_classify from plugin helloworld
+2025.02.25-10:57:20.36 - <debug> Registered op image_detect from plugin helloworld
+2025.02.25-10:57:20.36 - <debug> Registered op image_segment from plugin helloworld
+2025.02.25-10:57:20.36 - <debug> Registered op image_pose from plugin helloworld
+2025.02.25-10:57:20.36 - <debug> Registered op image_depth from plugin helloworld
+2025.02.25-10:57:20.36 - <debug> Registered op exec from plugin helloworld
+2025.02.25-10:57:20.36 - <debug> Registered op tf_session_load from plugin helloworld
+2025.02.25-10:57:20.36 - <debug> Registered op tf_session_run from plugin helloworld
+2025.02.25-10:57:20.36 - <debug> Registered op tf_session_delete from plugin helloworld
+2025.02.25-10:57:20.36 - <debug> Registered op minmax from plugin helloworld
+2025.02.25-10:57:20.36 - <debug> Registered op fpga_arraycopy from plugin helloworld
+2025.02.25-10:57:20.36 - <debug> Registered op fpga_vectoradd from plugin helloworld
+2025.02.25-10:57:20.36 - <debug> Registered op fpga_parallel from plugin helloworld
+2025.02.25-10:57:20.36 - <debug> Registered op fpga_mmult from plugin helloworld
+2025.02.25-10:57:20.36 - <debug> Registered op exec_with_resource from plugin helloworld
+2025.02.25-10:57:20.36 - <debug> Registered op torch_jitload_forward from plugin helloworld
+2025.02.25-10:57:20.36 - <debug> Registered op torch_sgemm from plugin helloworld
+2025.02.25-10:57:20.36 - <debug> Registered op opencv from plugin helloworld
+2025.02.25-10:57:20.36 - <debug> Registered op tflite_session_load from plugin helloworld
+2025.02.25-10:57:20.36 - <debug> Registered op tflite_session_run from plugin helloworld
+2025.02.25-10:57:20.36 - <debug> Registered op tflite_session_delete from plugin helloworld
+2025.02.25-10:57:20.36 - <debug> Loaded plugin helloworld from ./lib/x86_64-linux-gnu/libvaccel-helloworld.so
+2025.02.25-10:57:20.36 - <debug> New rundir for session 1: /run/user/1009/vaccel/J8Y8QX/session.1
+2025.02.25-10:57:20.36 - <debug> Initialized session 1
 Initialized session with id: 1
-2025.01.09-16:07:18.11 - <debug> session:1 Looking for plugin implementing noop
-2025.01.09-16:07:18.11 - <debug> Returning func from hint plugin helloworld
-2025.01.09-16:07:18.11 - <debug> Found implementation in helloworld plugin
-2025.01.09-16:07:18.11 - <debug> [helloworld] Calling vaccel-helloworld for session 1
-2025.01.09-16:07:18.11 - <debug> Released session 1
-2025.01.09-16:07:18.11 - <debug> Shutting down vAccel
-2025.01.09-16:07:18.11 - <debug> Cleaning up plugins
-2025.01.09-16:07:18.11 - <debug> Unregistered plugin helloworld
+2025.02.25-10:57:20.36 - <debug> session:1 Looking for plugin implementing noop
+2025.02.25-10:57:20.36 - <debug> Returning func from hint plugin helloworld
+2025.02.25-10:57:20.36 - <debug> Found implementation in helloworld plugin
+2025.02.25-10:57:20.36 - <debug> [helloworld] Calling no-op for session 1
+2025.02.25-10:57:20.36 - <debug> Released session 1
+2025.02.25-10:57:20.36 - <debug> Cleaning up vAccel
+2025.02.25-10:57:20.36 - <debug> Cleaning up sessions
+2025.02.25-10:57:20.36 - <debug> Cleaning up resources
+2025.02.25-10:57:20.36 - <debug> Cleaning up plugins
+2025.02.25-10:57:20.36 - <debug> Unregistered plugin helloworld
 ```
 
 ### Takeaway

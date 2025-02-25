@@ -6,84 +6,46 @@ This is a rather long lab so it has been separated in small(er) sections for it 
 # Creating an operation
 Using the knowledge from the previous labs and with some tinkering with the source files, it is possible to add an operation to the vaccelrt files for whichever function you wish to decouple from the hardware.
 
-Suppose we would like to create an operation called "FOO" and add it to the vaccelrt files:   
+Suppose we would like to create an operation called "FOO" and add it to the vAccel files:   
 
 Working from the `vaccel/src` directory:
 
 
-Since we have an operation name in mind, lets add this first to the vaccel codebase.
-In the `include/vaccel/op.h` file we can see there is an enum declration of `vaccel_op_type`:
+Since we have an operation name in mind, lets add this first to the vAccel codebase.
+In the `include/vaccel/op.h` file we can see there is an enum list of vAccel types:
 
 Here there are some declarations made for some of the operations already used but we need to add our operation, "FOO" as shown below.
 
 ```C
-enum vaccel_op_type {
-        VACCEL_NO_OP = 0,
-        VACCEL_BLAS_SGEMM,          /* 1 */
-        VACCEL_IMG_CLASS,           /* 2 */
-        VACCEL_IMG_DETEC,           /* 3 */
-        VACCEL_IMG_SEGME,           /* 4 */
-        VACCEL_IMG_POSE,            /* 5 */
-        VACCEL_IMG_DEPTH,           /* 6 */
-        VACCEL_EXEC,                /* 7 */
-        VACCEL_TF_MODEL_NEW,        /* 8 */
-        VACCEL_TF_MODEL_DESTROY,    /* 9 */
-        VACCEL_TF_MODEL_REGISTER,   /* 10 */
-        VACCEL_TF_MODEL_UNREGISTER, /* 11 */
-        VACCEL_TF_SESSION_LOAD,     /* 12 */
-        VACCEL_TF_SESSION_RUN,      /* 13 */
-        VACCEL_TF_SESSION_DELETE,   /* 14 */
-        VACCEL_MINMAX,              /* 15 */
-        VACCEL_F_ARRAYCOPY,         /* 16 */
-        VACCEL_F_MMULT,             /* 17 */
-        VACCEL_F_PARALLEL,          /* 18 */
-        VACCEL_F_VECTORADD,         /* 19 */
-        VACCEL_EXEC_WITH_RESOURCE,  /* 20 */
-        VACCEL_TORCH_JITLOAD_FORWARD, /* 21 */
-        VACCEL_TORCH_SGEMM, /* 22 */
-        VACCEL_OPENCV,  /* 23 */
-        VACCEL_TFLITE_SESSION_LOAD,  /* 24 */
-        VACCEL_TFLITE_SESSION_RUN,   /* 25 */
-        VACCEL_TFLITE_SESSION_DELETE,/* 26 */
-        VACCEL_FOO,  /* 27 */
-        VACCEL_FUNCTIONS_NR
-};
-```
-
-Underneath in this same file, we have the operation name array ```vaccel_op_name``` and we can just add the description of the operation in the relevant position. In this case, we can add `foo` as the description.
-
-```C
-static const char *vaccel_op_name[] = {
-        "noop",
-        "sgemm",
-        "image classification",
-        "image detection",
-        "image segmentation",
-        "image pose estimation",
-        "image depth estimation",
-        "exec",
-        "TensorFlow model create",
-        "TensorFlow model destroy",
-        "TensorFlow model register",
-        "TensorFlow model unregister",
-        "TensorFlow session load",
-        "TensorFlow session run",
-        "TensorFlow session delete",
-        "MinMax",
-        "Array copy",
-        "Matrix multiplication",
-        "Parallel acceleration",
-        "Vector Add",
-        "Exec with resource",
-        "Torch jitload_forward function",
-        "Torch SGEMM",
-        "OpenCV Generic",
-        "TensorFlow Lite session load",
-        "TensorFlow Lite session run",
-        "TensorFlow Lite session delete",
-        "foo",
-        "Functions NR",
-};
+#define VACCEL_OP_TYPE_ENUM_LIST(VACCEL_ENUM_ITEM)            \
+        VACCEL_ENUM_ITEM(NOOP, 0, _ENUM_PREFIX)               \
+        VACCEL_ENUM_ITEM(BLAS_SGEMM, _ENUM_PREFIX)            \
+        VACCEL_ENUM_ITEM(IMAGE_CLASSIFY, _ENUM_PREFIX)        \
+        VACCEL_ENUM_ITEM(IMAGE_DETECT, _ENUM_PREFIX)          \
+        VACCEL_ENUM_ITEM(IMAGE_SEGMENT, _ENUM_PREFIX)         \
+        VACCEL_ENUM_ITEM(IMAGE_POSE, _ENUM_PREFIX)            \
+        VACCEL_ENUM_ITEM(IMAGE_DEPTH, _ENUM_PREFIX)           \
+        VACCEL_ENUM_ITEM(EXEC, _ENUM_PREFIX)                  \
+        VACCEL_ENUM_ITEM(TF_MODEL_NEW, _ENUM_PREFIX)          \
+        VACCEL_ENUM_ITEM(TF_MODEL_DESTROY, _ENUM_PREFIX)      \
+        VACCEL_ENUM_ITEM(TF_MODEL_REGISTER, _ENUM_PREFIX)     \
+        VACCEL_ENUM_ITEM(TF_MODEL_UNREGISTER, _ENUM_PREFIX)   \
+        VACCEL_ENUM_ITEM(TF_SESSION_LOAD, _ENUM_PREFIX)       \
+        VACCEL_ENUM_ITEM(TF_SESSION_RUN, _ENUM_PREFIX)        \
+        VACCEL_ENUM_ITEM(TF_SESSION_DELETE, _ENUM_PREFIX)     \
+        VACCEL_ENUM_ITEM(MINMAX, _ENUM_PREFIX)                \
+        VACCEL_ENUM_ITEM(FPGA_ARRAYCOPY, _ENUM_PREFIX)        \
+        VACCEL_ENUM_ITEM(FPGA_MMULT, _ENUM_PREFIX)            \
+        VACCEL_ENUM_ITEM(FPGA_PARALLEL, _ENUM_PREFIX)         \
+        VACCEL_ENUM_ITEM(FPGA_VECTORADD, _ENUM_PREFIX)        \
+        VACCEL_ENUM_ITEM(EXEC_WITH_RESOURCE, _ENUM_PREFIX)    \
+        VACCEL_ENUM_ITEM(TORCH_JITLOAD_FORWARD, _ENUM_PREFIX) \
+        VACCEL_ENUM_ITEM(TORCH_SGEMM, _ENUM_PREFIX)           \
+        VACCEL_ENUM_ITEM(OPENCV, _ENUM_PREFIX)                \
+        VACCEL_ENUM_ITEM(TFLITE_SESSION_LOAD, _ENUM_PREFIX)   \
+        VACCEL_ENUM_ITEM(TFLITE_SESSION_RUN, _ENUM_PREFIX)    \
+        VACCEL_ENUM_ITEM(TFLITE_SESSION_DELETE, _ENUM_PREFIX) \
+        VACCEL_ENUM_ITEM(FOO, _ENUM_PREFIX)
 ```
 
 Great, now we can save this file and return to `/src/include/vaccel/ops` directory.
@@ -169,7 +131,7 @@ int vaccel_foo(struct vaccel_session *sess, uint32_t a, uint32_t b, uint32_t c)
 	vaccel_prof_region_start(&foo_op_stats);
 
 	//Get implementation
-	int (*plugin_op)() = get_plugin_op(VACCEL_FOO, sess->hint);
+	int (*plugin_op)() = plugin_get_op_func(VACCEL_OP_FOO, sess->hint);
 	if (!plugin_op)
 		return VACCEL_ENOTSUP;
 
@@ -259,46 +221,46 @@ So, starting at the top of the `vaccel` directory, we need to go to `plugins/noo
 
 ```C
 struct vaccel_op ops[] = {
-        VACCEL_OP_INIT(ops[0], VACCEL_NO_OP, noop_noop),
-        VACCEL_OP_INIT(ops[1], VACCEL_BLAS_SGEMM, noop_sgemm),
-        VACCEL_OP_INIT(ops[2], VACCEL_IMG_CLASS, noop_img_class),
-        VACCEL_OP_INIT(ops[3], VACCEL_IMG_DETEC, noop_img_detect),
-        VACCEL_OP_INIT(ops[4], VACCEL_IMG_SEGME, noop_img_segme),
-        VACCEL_OP_INIT(ops[5], VACCEL_IMG_POSE, noop_img_pose),
-	VACCEL_OP_INIT(ops[6], VACCEL_IMG_DEPTH, noop_img_depth),
-        VACCEL_OP_INIT(ops[7], VACCEL_EXEC, noop_exec),
-        VACCEL_OP_INIT(ops[8], VACCEL_TF_SESSION_LOAD, noop_tf_session_load),
-        VACCEL_OP_INIT(ops[9], VACCEL_TF_SESSION_RUN, noop_tf_session_run),
-        VACCEL_OP_INIT(ops[10], VACCEL_TF_SESSION_DELETE,
+        VACCEL_OP_INIT(ops[0], VACCEL_OP_NOOP, noop_noop),
+        VACCEL_OP_INIT(ops[1], VACCEL_OP_BLAS_SGEMM, noop_sgemm),
+        VACCEL_OP_INIT(ops[2], VACCEL_OP_IMAGE_CLASSIFY, noop_img_class),
+        VACCEL_OP_INIT(ops[3], VACCEL_OP_IMAGE_DETECT, noop_img_detect),
+        VACCEL_OP_INIT(ops[4], VACCEL_OP_IMAGE_SEGMENT, noop_img_segme),
+        VACCEL_OP_INIT(ops[5], VACCEL_OP_IMAGE_POSE, noop_img_pose),
+        VACCEL_OP_INIT(ops[6], VACCEL_OP_IMAGE_DEPTH, noop_img_depth),
+        VACCEL_OP_INIT(ops[7], VACCEL_OP_EXEC, noop_exec),
+        VACCEL_OP_INIT(ops[8], VACCEL_OP_TF_SESSION_LOAD, noop_tf_session_load),
+        VACCEL_OP_INIT(ops[9], VACCEL_OP_TF_SESSION_RUN, noop_tf_session_run),
+        VACCEL_OP_INIT(ops[10], VACCEL_OP_TF_SESSION_DELETE,
                        noop_tf_session_delete),
-        VACCEL_OP_INIT(ops[11], VACCEL_MINMAX, noop_minmax),
-        VACCEL_OP_INIT(ops[12], VACCEL_F_ARRAYCOPY, v_arraycopy),
-        VACCEL_OP_INIT(ops[13], VACCEL_F_VECTORADD, v_vectoradd),
-        VACCEL_OP_INIT(ops[14], VACCEL_F_PARALLEL, v_parallel),
-        VACCEL_OP_INIT(ops[15], VACCEL_F_MMULT, v_mmult),
-        VACCEL_OP_INIT(ops[16], VACCEL_EXEC_WITH_RESOURCE,
+        VACCEL_OP_INIT(ops[11], VACCEL_OP_MINMAX, noop_minmax),
+        VACCEL_OP_INIT(ops[12], VACCEL_OP_FPGA_ARRAYCOPY, v_arraycopy),
+        VACCEL_OP_INIT(ops[13], VACCEL_OP_FPGA_VECTORADD, v_vectoradd),
+        VACCEL_OP_INIT(ops[14], VACCEL_OP_FPGA_PARALLEL, v_parallel),
+        VACCEL_OP_INIT(ops[15], VACCEL_OP_FPGA_MMULT, v_mmult),
+        VACCEL_OP_INIT(ops[16], VACCEL_OP_EXEC_WITH_RESOURCE,
                        noop_exec_with_resource),
-        VACCEL_OP_INIT(ops[17], VACCEL_TORCH_JITLOAD_FORWARD,
+        VACCEL_OP_INIT(ops[17], VACCEL_OP_TORCH_JITLOAD_FORWARD,
                        noop_torch_jitload_forward),
-        VACCEL_OP_INIT(ops[18], VACCEL_TORCH_SGEMM, noop_torch_sgemm),
-        VACCEL_OP_INIT(ops[19], VACCEL_OPENCV, noop_opencv),
-        VACCEL_OP_INIT(ops[20], VACCEL_TFLITE_SESSION_LOAD,
+        VACCEL_OP_INIT(ops[18], VACCEL_OP_TORCH_SGEMM, noop_torch_sgemm),
+        VACCEL_OP_INIT(ops[19], VACCEL_OP_OPENCV, noop_opencv),
+        VACCEL_OP_INIT(ops[20], VACCEL_OP_TFLITE_SESSION_LOAD,
                        noop_tflite_session_load),
-        VACCEL_OP_INIT(ops[21], VACCEL_TFLITE_SESSION_RUN,
+        VACCEL_OP_INIT(ops[21], VACCEL_OP_TFLITE_SESSION_RUN,
                        noop_tflite_session_run),
-        VACCEL_OP_INIT(ops[22], VACCEL_TFLITE_SESSION_DELETE,
+        VACCEL_OP_INIT(ops[22], VACCEL_OP_TFLITE_SESSION_DELETE,
                        noop_tflite_session_delete),
-        VACCEL_OP_INIT(ops[23], VACCEL_FOO, noop_foo),
+        VACCEL_OP_INIT(ops[23], VACCEL_OP_FOO, noop_foo),
 };
 
 ```
 Here we are initialising the operations for the vaccel runtime and we can just add an extra element into the array `ops[]` as seen above as:
 
 ```C
-VACCEL_OP_INIT(ops[23], VACCEL_FOO, noop_foo)
+VACCEL_OP_INIT(ops[23], VACCEL_OP_FOO, noop_foo)
 ```
 
-`VACCEL_FOO` is the operation we are creating and we have a function using this operation which we will call `noop_foo`.
+`VACCEL_OP_FOO` is the operation we are creating and we have a function using this operation which we will call `noop_foo`.
 
 Now we have to actually implement this `noop_foo` function otherwise we will not be able be use this operation.
 
@@ -354,41 +316,47 @@ meson install -C build
 ```
 To run the executable from the `<path>` directory:
 ```
-LD_LIBRARY_PATH=./lib/x86_64-linux-gnu/ VACCEL_DEBUG_LEVEL=4 VACCEL_BACKENDS=./lib/x86_64-linux-gnu/libvaccel-noop.so ./bin/noop
+LD_LIBRARY_PATH=./lib/x86_64-linux-gnu/ VACCEL_LOG_LEVEL=4 VACCEL_PLUGINS=./lib/x86_64-linux-gnu/libvaccel-noop.so ./bin/noop
 ```
 
 We can see in the debug console that the operation FOO should have been implementated:
 
 ```
-2025.01.10-16:00:24.44 - <debug> Initializing vAccel
-2025.01.10-16:00:24.44 - <info> vAccel 0.6.1-166-3cfa48b7-dirty
-2025.01.10-16:00:24.44 - <debug> Created top-level rundir: /run/user/1009/vaccel/a8M11d
-2025.01.10-16:00:24.44 - <info> Registered plugin noop 0.6.1-166-3cfa48b7-dirty
-2025.01.10-16:00:24.44 - <debug> Registered function noop from plugin noop
-2025.01.10-16:00:24.44 - <debug> Registered function sgemm from plugin noop
-2025.01.10-16:00:24.44 - <debug> Registered function image classification from plugin noop
-2025.01.10-16:00:24.44 - <debug> Registered function image detection from plugin noop
-2025.01.10-16:00:24.44 - <debug> Registered function image segmentation from plugin noop
-2025.01.10-16:00:24.44 - <debug> Registered function image pose estimation from plugin noop
-2025.01.10-16:00:24.44 - <debug> Registered function image depth estimation from plugin noop
-2025.01.10-16:00:24.44 - <debug> Registered function exec from plugin noop
-2025.01.10-16:00:24.44 - <debug> Registered function TensorFlow session load from plugin noop
-2025.01.10-16:00:24.44 - <debug> Registered function TensorFlow session run from plugin noop
-2025.01.10-16:00:24.44 - <debug> Registered function TensorFlow session delete from plugin noop
-2025.01.10-16:00:24.44 - <debug> Registered function MinMax from plugin noop
-2025.01.10-16:00:24.44 - <debug> Registered function Array copy from plugin noop
-2025.01.10-16:00:24.44 - <debug> Registered function Vector Add from plugin noop
-2025.01.10-16:00:24.44 - <debug> Registered function Parallel acceleration from plugin noop
-2025.01.10-16:00:24.44 - <debug> Registered function Matrix multiplication from plugin noop
-2025.01.10-16:00:24.44 - <debug> Registered function Exec with resource from plugin noop
-2025.01.10-16:00:24.44 - <debug> Registered function Torch jitload_forward function from plugin noop
-2025.01.10-16:00:24.44 - <debug> Registered function Torch SGEMM from plugin noop
-2025.01.10-16:00:24.44 - <debug> Registered function OpenCV Generic from plugin noop
-2025.01.10-16:00:24.44 - <debug> Registered function TensorFlow Lite session load from plugin noop
-2025.01.10-16:00:24.44 - <debug> Registered function TensorFlow Lite session run from plugin noop
-2025.01.10-16:00:24.44 - <debug> Registered function TensorFlow Lite session delete from plugin noop
-2025.01.10-16:00:24.44 - <debug> Registered function foo from plugin noop
-
+2025.02.25-12:31:35.90 - <debug> Initializing vAccel
+2025.02.25-12:31:35.90 - <info> vAccel 0.6.1-182-262677eb-dirty
+2025.02.25-12:31:35.90 - <debug> Config:
+2025.02.25-12:31:35.90 - <debug>   plugins = ./lib/x86_64-linux-gnu/libvaccel-noop.so
+2025.02.25-12:31:35.90 - <debug>   log_level = debug
+2025.02.25-12:31:35.90 - <debug>   log_file = (null)
+2025.02.25-12:31:35.90 - <debug>   profiling_enabled = false
+2025.02.25-12:31:35.90 - <debug>   version_ignore = false
+2025.02.25-12:31:35.90 - <debug> Created top-level rundir: /run/user/1009/vaccel/eDq5xS
+2025.02.25-12:31:35.90 - <info> Registered plugin noop 0.6.1-182-262677eb-dirty
+2025.02.25-12:31:35.90 - <debug> Registered op noop from plugin noop
+2025.02.25-12:31:35.90 - <debug> Registered op blas_sgemm from plugin noop
+2025.02.25-12:31:35.90 - <debug> Registered op image_classify from plugin noop
+2025.02.25-12:31:35.90 - <debug> Registered op image_detect from plugin noop
+2025.02.25-12:31:35.90 - <debug> Registered op image_segment from plugin noop
+2025.02.25-12:31:35.90 - <debug> Registered op image_pose from plugin noop
+2025.02.25-12:31:35.90 - <debug> Registered op image_depth from plugin noop
+2025.02.25-12:31:35.90 - <debug> Registered op exec from plugin noop
+2025.02.25-12:31:35.90 - <debug> Registered op tf_session_load from plugin noop
+2025.02.25-12:31:35.90 - <debug> Registered op tf_session_run from plugin noop
+2025.02.25-12:31:35.90 - <debug> Registered op tf_session_delete from plugin noop
+2025.02.25-12:31:35.90 - <debug> Registered op minmax from plugin noop
+2025.02.25-12:31:35.90 - <debug> Registered op fpga_arraycopy from plugin noop
+2025.02.25-12:31:35.90 - <debug> Registered op fpga_vectoradd from plugin noop
+2025.02.25-12:31:35.90 - <debug> Registered op fpga_parallel from plugin noop
+2025.02.25-12:31:35.90 - <debug> Registered op fpga_mmult from plugin noop
+2025.02.25-12:31:35.90 - <debug> Registered op exec_with_resource from plugin noop
+2025.02.25-12:31:35.90 - <debug> Registered op torch_jitload_forward from plugin noop
+2025.02.25-12:31:35.90 - <debug> Registered op torch_sgemm from plugin noop
+2025.02.25-12:31:35.90 - <debug> Registered op opencv from plugin noop
+2025.02.25-12:31:35.90 - <debug> Registered op tflite_session_load from plugin noop
+2025.02.25-12:31:35.90 - <debug> Registered op tflite_session_run from plugin noop
+2025.02.25-12:31:35.90 - <debug> Registered op tflite_session_delete from plugin noop
+2025.02.25-12:31:35.90 - <debug> Registered op foo from plugin noop
+...
 ```
 
 ## Function implementation
@@ -444,12 +412,12 @@ static int foo_foo(struct vaccel_session *sess, uint32_t a, uint32_t b,
 }
 
 struct vaccel_op ops[] = {
-        VACCEL_OP_INIT(ops[0], VACCEL_FOO, foo_foo),
+        VACCEL_OP_INIT(ops[0], VACCEL_OP_FOO, foo_foo),
 };
 
 static int init(void)
 {
-        return register_plugin_functions(ops, sizeof(ops) / sizeof(ops[0]));
+        return vaccel_plugin_register_ops(ops, sizeof(ops) / sizeof(ops[0]));
 }
 
 static int fini(void)
@@ -457,13 +425,13 @@ static int fini(void)
         return VACCEL_OK;
 }
 
-VACCEL_MODULE(.name = "foo", .version = VACCEL_VERSION,
+VACCEL_PLUGIN(.name = "foo", .version = VACCEL_VERSION,
               .vaccel_version = VACCEL_VERSION, .type = VACCEL_PLUGIN_DEBUG,
               .init = init, .fini = fini)
 
 ```
 
-Now lets just create a basic `foo.c` in the examples folder, just like the hello world example:
+Now lets just create a basic `foo.c` in the `vaccel/examples` folder, just like the hello world example:
 
 ```C
 #include "vaccel.h"
@@ -545,7 +513,7 @@ Finally, we add the example source file `'foo.c'` to the end of the `examples_so
 Now we can build our new plugin, by specifying the new option we just added:
 
 ```bash
-meson setup -Dplugin-foo build --reconfigure
+meson setup -Dplugin-foo=enabled build --reconfigure
 meson compile -C build
 meson install -C build
 ```
@@ -553,32 +521,41 @@ meson install -C build
 And run it:
 
 ```bash
-LD_LIBRARY_PATH=<path>/lib/x86_64-linux-gnu/ VACCEL_DEBUG_LEVEL=4 VACCEL_BACKENDS=<path>/lib/x86_64-linux-gnu/libvaccel-foo.so <path>/bin/foo
+LD_LIBRARY_PATH=<path>/lib/x86_64-linux-gnu/ VACCEL_LOG_LEVEL=4 VACCEL_PLUGINS=<path>/lib/x86_64-linux-gnu/libvaccel-foo.so <path>/bin/foo
 ```
 
 
 And now for the result:
 
 ```
-2025.01.10-17:02:37.48 - <debug> Initializing vAccel
-2025.01.10-17:02:37.48 - <info> vAccel 0.6.1-166-3cfa48b7-dirty
-2025.01.10-17:02:37.48 - <debug> Created top-level rundir: /run/user/1009/vaccel/pDGV3m
-2025.01.10-17:02:37.48 - <info> Registered plugin foo 0.6.1-166-3cfa48b7-dirty
-2025.01.10-17:02:37.48 - <debug> Registered function foo from plugin foo
-2025.01.10-17:02:37.48 - <debug> Loaded plugin foo from /home/mgkeka/binaries/test/vaccel/lib/x86_64-linux-gnu/libvaccel-foo.so
-2025.01.10-17:02:37.49 - <debug> New rundir for session 1: /run/user/1009/vaccel/pDGV3m/session.1
-2025.01.10-17:02:37.49 - <debug> Initialized session 1
+2025.02.25-12:51:29.68 - <debug> Initializing vAccel
+2025.02.25-12:51:29.68 - <info> vAccel 0.6.1-182-262677eb-dirty
+2025.02.25-12:51:29.68 - <debug> Config:
+2025.02.25-12:51:29.68 - <debug>   plugins = /home/mgkeka/binaries/vaccel/lib/x86_64-linux-gnu/libvaccel-foo.so
+2025.02.25-12:51:29.68 - <debug>   log_level = debug
+2025.02.25-12:51:29.68 - <debug>   log_file = (null)
+2025.02.25-12:51:29.68 - <debug>   profiling_enabled = false
+2025.02.25-12:51:29.68 - <debug>   version_ignore = false
+2025.02.25-12:51:29.68 - <debug> Created top-level rundir: /run/user/1009/vaccel/j6sGS0
+2025.02.25-12:51:29.68 - <info> Registered plugin foo 0.6.1-182-262677eb-dirty
+2025.02.25-12:51:29.68 - <debug> Registered op foo from plugin foo
+2025.02.25-12:51:29.68 - <debug> Loaded plugin foo from /home/mgkeka/binaries/vaccel/lib/x86_64-linux-gnu/libvaccel-foo.so
+2025.02.25-12:51:29.68 - <debug> New rundir for session 1: /run/user/1009/vaccel/j6sGS0/session.1
+2025.02.25-12:51:29.68 - <debug> Initialized session 1
 Initialized session with id: 1
-2025.01.10-17:02:37.49 - <debug> Returning func from hint plugin foo
-2025.01.10-17:02:37.49 - <debug> Found implementation in foo plugin
-2025.01.10-17:02:37.49 - <debug> [foo] Calling foo for session 1
-2025.01.10-17:02:37.49 - <debug> [foo] Calling foo operation here
+2025.02.25-12:51:29.68 - <debug> session:1 Looking for plugin implementing FOO operation
+2025.02.25-12:51:29.68 - <debug> Returning func from hint plugin foo
+2025.02.25-12:51:29.68 - <debug> Found implementation in foo plugin
+2025.02.25-12:51:29.68 - <debug> [foo] Calling foo for session 1
+2025.02.25-12:51:29.68 - <debug> [foo] Calling foo operation here
 Result = 10
-2025.01.10-17:02:37.49 - <debug> [foo] Ending foo operation here
-2025.01.10-17:02:37.49 - <debug> Released session 1
-2025.01.10-17:02:37.49 - <debug> Shutting down vAccel
-2025.01.10-17:02:37.49 - <debug> Cleaning up plugins
-2025.01.10-17:02:37.49 - <debug> Unregistered plugin foo
+2025.02.25-12:51:29.68 - <debug> [foo] Ending foo operation here
+2025.02.25-12:51:29.68 - <debug> Released session 1
+2025.02.25-12:51:29.68 - <debug> Cleaning up vAccel
+2025.02.25-12:51:29.68 - <debug> Cleaning up sessions
+2025.02.25-12:51:29.68 - <debug> Cleaning up resources
+2025.02.25-12:51:29.68 - <debug> Cleaning up plugins
+2025.02.25-12:51:29.68 - <debug> Unregistered plugin foo
 ```
 
 Perfect, works as intended.
