@@ -74,6 +74,7 @@ tree -d .
 └── vaccelrt
 
 ```
+In the `app/Makefile`, modify the `VACCEL_INSTALL_PATH` variable to specify the vAccel installation path, which is referred as <path> in the previous labs.
 
 In the `app` subfolder, we've added a git submodule pointing to the example
 code mentioned earlier (`opencl_examples`). Lets go to the code and build it:
