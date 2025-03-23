@@ -84,26 +84,26 @@ LD_LIBRARY_PATH=./lib/x86_64-linux-gnu VACCEL_LOG_LEVEL=4  ./bin/noop
 ```
 should return
 ```
-2025.02.25-09:34:26.20 - <debug> Initializing vAccel
-2025.02.25-09:34:26.20 - <info> vAccel 0.6.1-182-262677eb
-2025.02.25-09:34:26.20 - <debug> Config:
-2025.02.25-09:34:26.20 - <debug>   plugins = (null)
-2025.02.25-09:34:26.20 - <debug>   log_level = debug
-2025.02.25-09:34:26.20 - <debug>   log_file = (null)
-2025.02.25-09:34:26.20 - <debug>   profiling_enabled = false
-2025.02.25-09:34:26.20 - <debug>   version_ignore = false
-2025.02.25-09:34:26.20 - <debug> Created top-level rundir: /run/user/1009/vaccel/Opolj6
-2025.02.25-09:34:26.20 - <debug> New rundir for session 1: /run/user/1009/vaccel/Opolj6/session.1
-2025.02.25-09:34:26.20 - <debug> Initialized session 1
+2025.03.23-09:45:58.89 - <debug> Initializing vAccel
+2025.03.23-09:45:58.89 - <info> vAccel 0.6.1-191-f1337abd
+2025.03.23-09:45:58.89 - <debug> Config:
+2025.03.23-09:45:58.89 - <debug>   plugins = (null)
+2025.03.23-09:45:58.89 - <debug>   log_level = debug
+2025.03.23-09:45:58.89 - <debug>   log_file = (null)
+2025.03.23-09:45:58.89 - <debug>   profiling_enabled = false
+2025.03.23-09:45:58.89 - <debug>   version_ignore = false
+2025.03.23-09:45:58.89 - <debug> Created top-level rundir: /run/user/1008/vaccel/Kd6iwd
+2025.03.23-09:45:58.89 - <debug> New rundir for session 1: /run/user/1008/vaccel/Kd6iwd/session.1
+2025.03.23-09:45:58.89 - <debug> Initialized session 1
 Initialized session with id: 1
-2025.02.25-09:34:26.20 - <debug> session:1 Looking for plugin implementing noop
-2025.02.25-09:34:26.20 - <warn> None of the loaded plugins implement VACCEL_OP_NOOP
+2025.03.23-09:45:58.89 - <debug> session:1 Looking for plugin implementing noop
+2025.03.23-09:45:58.89 - <warn> None of the loaded plugins implement VACCEL_OP_NOOP
 Could not run op: 95
-2025.02.25-09:34:26.20 - <debug> Released session 1
-2025.02.25-09:34:26.20 - <debug> Cleaning up vAccel
-2025.02.25-09:34:26.20 - <debug> Cleaning up sessions
-2025.02.25-09:34:26.20 - <debug> Cleaning up resources
-2025.02.25-09:34:26.20 - <debug> Cleaning up plugins
+2025.03.23-09:45:58.89 - <debug> Released session 1
+2025.03.23-09:45:58.89 - <debug> Cleaning up vAccel
+2025.03.23-09:45:58.89 - <debug> Cleaning up sessions
+2025.03.23-09:45:58.89 - <debug> Cleaning up resources
+2025.03.23-09:45:58.89 - <debug> Cleaning up plugins
 ```
 
 Ok better!
@@ -133,53 +133,53 @@ LD_LIBRARY_PATH=./lib/x86_64-linux-gnu VACCEL_LOG_LEVEL=4 VACCEL_PLUGINS=./lib/x
 we get the following output:
 
 ```
-2025.02.25-09:41:22.59 - <debug> Initializing vAccel
-2025.02.25-09:41:22.59 - <info> vAccel 0.6.1-182-262677eb
-2025.02.25-09:41:22.59 - <debug> Config:
-2025.02.25-09:41:22.59 - <debug>   plugins = ./lib/x86_64-linux-gnu/libvaccel-noop.so
-2025.02.25-09:41:22.59 - <debug>   log_level = debug
-2025.02.25-09:41:22.59 - <debug>   log_file = (null)
-2025.02.25-09:41:22.60 - <debug>   profiling_enabled = false
-2025.02.25-09:41:22.60 - <debug>   version_ignore = false
-2025.02.25-09:41:22.60 - <debug> Created top-level rundir: /run/user/1009/vaccel/IBIY7d
-2025.02.25-09:41:22.60 - <info> Registered plugin noop 0.6.1-182-262677eb
-2025.02.25-09:41:22.60 - <debug> Registered op noop from plugin noop
-2025.02.25-09:41:22.60 - <debug> Registered op blas_sgemm from plugin noop
-2025.02.25-09:41:22.60 - <debug> Registered op image_classify from plugin noop
-2025.02.25-09:41:22.60 - <debug> Registered op image_detect from plugin noop
-2025.02.25-09:41:22.60 - <debug> Registered op image_segment from plugin noop
-2025.02.25-09:41:22.60 - <debug> Registered op image_pose from plugin noop
-2025.02.25-09:41:22.60 - <debug> Registered op image_depth from plugin noop
-2025.02.25-09:41:22.60 - <debug> Registered op exec from plugin noop
-2025.02.25-09:41:22.60 - <debug> Registered op tf_session_load from plugin noop
-2025.02.25-09:41:22.60 - <debug> Registered op tf_session_run from plugin noop
-2025.02.25-09:41:22.60 - <debug> Registered op tf_session_delete from plugin noop
-2025.02.25-09:41:22.60 - <debug> Registered op minmax from plugin noop
-2025.02.25-09:41:22.60 - <debug> Registered op fpga_arraycopy from plugin noop
-2025.02.25-09:41:22.60 - <debug> Registered op fpga_vectoradd from plugin noop
-2025.02.25-09:41:22.60 - <debug> Registered op fpga_parallel from plugin noop
-2025.02.25-09:41:22.60 - <debug> Registered op fpga_mmult from plugin noop
-2025.02.25-09:41:22.60 - <debug> Registered op exec_with_resource from plugin noop
-2025.02.25-09:41:22.60 - <debug> Registered op torch_jitload_forward from plugin noop
-2025.02.25-09:41:22.60 - <debug> Registered op torch_sgemm from plugin noop
-2025.02.25-09:41:22.60 - <debug> Registered op opencv from plugin noop
-2025.02.25-09:41:22.60 - <debug> Registered op tflite_session_load from plugin noop
-2025.02.25-09:41:22.60 - <debug> Registered op tflite_session_run from plugin noop
-2025.02.25-09:41:22.60 - <debug> Registered op tflite_session_delete from plugin noop
-2025.02.25-09:41:22.60 - <debug> Loaded plugin noop from ./lib/x86_64-linux-gnu/libvaccel-noop.so
-2025.02.25-09:41:22.60 - <debug> New rundir for session 1: /run/user/1009/vaccel/IBIY7d/session.1
-2025.02.25-09:41:22.60 - <debug> Initialized session 1
+2025.03.23-09:46:52.12 - <debug> Initializing vAccel
+2025.03.23-09:46:52.12 - <info> vAccel 0.6.1-191-f1337abd
+2025.03.23-09:46:52.12 - <debug> Config:
+2025.03.23-09:46:52.12 - <debug>   plugins = ./lib/x86_64-linux-gnu/libvaccel-noop.so
+2025.03.23-09:46:52.12 - <debug>   log_level = debug
+2025.03.23-09:46:52.12 - <debug>   log_file = (null)
+2025.03.23-09:46:52.12 - <debug>   profiling_enabled = false
+2025.03.23-09:46:52.12 - <debug>   version_ignore = false
+2025.03.23-09:46:52.12 - <debug> Created top-level rundir: /run/user/1008/vaccel/ehxGl2
+2025.03.23-09:46:52.12 - <info> Registered plugin noop 0.6.1-191-f1337abd
+2025.03.23-09:46:52.12 - <debug> Registered op noop from plugin noop
+2025.03.23-09:46:52.12 - <debug> Registered op blas_sgemm from plugin noop
+2025.03.23-09:46:52.12 - <debug> Registered op image_classify from plugin noop
+2025.03.23-09:46:52.12 - <debug> Registered op image_detect from plugin noop
+2025.03.23-09:46:52.12 - <debug> Registered op image_segment from plugin noop
+2025.03.23-09:46:52.12 - <debug> Registered op image_pose from plugin noop
+2025.03.23-09:46:52.12 - <debug> Registered op image_depth from plugin noop
+2025.03.23-09:46:52.12 - <debug> Registered op exec from plugin noop
+2025.03.23-09:46:52.12 - <debug> Registered op tf_session_load from plugin noop
+2025.03.23-09:46:52.12 - <debug> Registered op tf_session_run from plugin noop
+2025.03.23-09:46:52.12 - <debug> Registered op tf_session_delete from plugin noop
+2025.03.23-09:46:52.12 - <debug> Registered op minmax from plugin noop
+2025.03.23-09:46:52.12 - <debug> Registered op fpga_arraycopy from plugin noop
+2025.03.23-09:46:52.12 - <debug> Registered op fpga_vectoradd from plugin noop
+2025.03.23-09:46:52.12 - <debug> Registered op fpga_parallel from plugin noop
+2025.03.23-09:46:52.12 - <debug> Registered op fpga_mmult from plugin noop
+2025.03.23-09:46:52.12 - <debug> Registered op exec_with_resource from plugin noop
+2025.03.23-09:46:52.12 - <debug> Registered op torch_jitload_forward from plugin noop
+2025.03.23-09:46:52.12 - <debug> Registered op torch_sgemm from plugin noop
+2025.03.23-09:46:52.12 - <debug> Registered op opencv from plugin noop
+2025.03.23-09:46:52.12 - <debug> Registered op tflite_session_load from plugin noop
+2025.03.23-09:46:52.12 - <debug> Registered op tflite_session_run from plugin noop
+2025.03.23-09:46:52.12 - <debug> Registered op tflite_session_delete from plugin noop
+2025.03.23-09:46:52.12 - <debug> Loaded plugin noop from ./lib/x86_64-linux-gnu/libvaccel-noop.so
+2025.03.23-09:46:52.12 - <debug> New rundir for session 1: /run/user/1008/vaccel/ehxGl2/session.1
+2025.03.23-09:46:52.12 - <debug> Initialized session 1
 Initialized session with id: 1
-2025.02.25-09:41:22.60 - <debug> session:1 Looking for plugin implementing noop
-2025.02.25-09:41:22.60 - <debug> Returning func from hint plugin noop
-2025.02.25-09:41:22.60 - <debug> Found implementation in noop plugin
-2025.02.25-09:41:22.60 - <debug> [noop] Calling no-op for session 1
-2025.02.25-09:41:22.60 - <debug> Released session 1
-2025.02.25-09:41:22.60 - <debug> Cleaning up vAccel
-2025.02.25-09:41:22.60 - <debug> Cleaning up sessions
-2025.02.25-09:41:22.60 - <debug> Cleaning up resources
-2025.02.25-09:41:22.60 - <debug> Cleaning up plugins
-2025.02.25-09:41:22.60 - <debug> Unregistered plugin noop
+2025.03.23-09:46:52.12 - <debug> session:1 Looking for plugin implementing noop
+2025.03.23-09:46:52.12 - <debug> Returning func from hint plugin noop
+2025.03.23-09:46:52.12 - <debug> Found implementation in noop plugin
+2025.03.23-09:46:52.12 - <debug> [noop] Calling no-op for session 1
+2025.03.23-09:46:52.12 - <debug> Released session 1
+2025.03.23-09:46:52.12 - <debug> Cleaning up vAccel
+2025.03.23-09:46:52.12 - <debug> Cleaning up sessions
+2025.03.23-09:46:52.12 - <debug> Cleaning up resources
+2025.03.23-09:46:52.12 - <debug> Cleaning up plugins
+2025.03.23-09:46:52.12 - <debug> Unregistered plugin noop
 ```
 
 ## Takeaway
