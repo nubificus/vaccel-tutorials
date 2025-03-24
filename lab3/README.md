@@ -74,8 +74,9 @@ One thing to note here is that we must declare what variables our operation is g
 
 We can now return to directory `/src/include`.
 
-The only change we need to do here is in the `vaccel.h.in` file. Here, we can add our header
-`#include "vaccel/ops/foo.h"` in this file.
+The necessary changes we need to do here are as follows:
+  * In the `vaccel.h.in` file, add the header `#include "vaccel/ops/foo.h"`.
+  * In the `meson.build` file, add `'vaccel/ops/foo.h'` in the `vaccel_public_headers` list so that the header file of our plugin to be copied to the installation path.
 
 We can now leave the `include` directory completely and move onto the `src/ops` directory.
 
