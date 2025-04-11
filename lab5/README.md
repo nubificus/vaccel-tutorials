@@ -205,9 +205,9 @@ This creates a VM under a docker container with pre-installed QEMU.
 ```
 The noop plugin is pre-exported. To use a different plugin, ensure you export it before running the application.
 
-## Run an application on guest
+## Accessing the host
 
-To run a vAccel example, we first need to connect to the VM by executing the already running Docker container.
+To run a vAccel application on guest, we need a guest-host communication. The previous step ("Booting a VM") shows us how to launch the guest, a QEMU-based VM inside a Docker container. For the host, we need to connect to the VM by executing the already running Docker container.
 Open a terminal and copy the \<CONTAINER ID\> the following command returns:
 ```
 docker ps
@@ -216,12 +216,80 @@ Run a bash shell inside the container by replacing \<CONTAINER ID\> with the ID 
 ```
 docker exec -it <CONTAINER ID> /bin/bash
 ```
-Connect to the VM:
+
+Now we have two options to access the host:
+1. _SSH-based communication_
+2. _RPC-based communication_
+
+### SSH-based Communication
+
+The guest VM connects to the host over the loopback interface (`localhost`) using the SSH protocol, typically via a port that is forwarded by QEMU:
 ```
 ssh localhost -p 60022
 ```
+Now, you can go straight to [Run an application on guest](#run-an-application-on-guest).
 
-Let's try one of the vAccel examples, for instance image classification: `classify`.
+### RPC-based Communication
+The vAccel RPC agent runs on the host and listens for requests over vsock. Except vAccel RPC agent, the host need vAccel and an acceleration plugin. 
+So, you can install vAccel and vAccel RPC agent from source following the instructions in the [Build vAccel and vAccel-rpc plugin](#build-vaccel-and-vaccel-rpc-plugin) section.
+
+Assuming that the vaccel-rpc-agent is installed at the standard path `/usr/local/bin`, you can run the agent on host:
+```
+VACCEL_RPC_ADDRESS="vsock://2:2048" && VACCEL_BOOTSTRAP_ENABLED=0 vaccel-rpc-agent -a "${VACCEL_RPC_ADDRESS}" --vaccel-config "plugins=libvaccel-noop.so,log_level=4"
+```
+```
+2025.04.11-14:47:00.13 - <debug> Initializing vAccel
+2025.04.11-14:47:00.13 - <info> vAccel 0.6.1-194-19056528
+2025.04.11-14:47:00.13 - <debug> Config:
+2025.04.11-14:47:00.13 - <debug>   plugins = libvaccel-noop.so
+2025.04.11-14:47:00.13 - <debug>   log_level = debug
+2025.04.11-14:47:00.13 - <debug>   log_file = (null)
+2025.04.11-14:47:00.13 - <debug>   profiling_enabled = false
+2025.04.11-14:47:00.13 - <debug>   version_ignore = false
+2025.04.11-14:47:00.13 - <debug> Created top-level rundir: /run/user/0/vaccel/4Eyvhe
+2025.04.11-14:47:00.13 - <info> Registered plugin noop 0.6.1-194-19056528
+2025.04.11-14:47:00.13 - <debug> Registered op noop from plugin noop
+2025.04.11-14:47:00.13 - <debug> Registered op blas_sgemm from plugin noop
+2025.04.11-14:47:00.13 - <debug> Registered op image_classify from plugin noop
+2025.04.11-14:47:00.13 - <debug> Registered op image_detect from plugin noop
+2025.04.11-14:47:00.13 - <debug> Registered op image_segment from plugin noop
+2025.04.11-14:47:00.13 - <debug> Registered op image_pose from plugin noop
+2025.04.11-14:47:00.13 - <debug> Registered op image_depth from plugin noop
+2025.04.11-14:47:00.13 - <debug> Registered op exec from plugin noop
+2025.04.11-14:47:00.13 - <debug> Registered op tf_session_load from plugin noop
+2025.04.11-14:47:00.13 - <debug> Registered op tf_session_run from plugin noop
+2025.04.11-14:47:00.13 - <debug> Registered op tf_session_delete from plugin noop
+2025.04.11-14:47:00.13 - <debug> Registered op minmax from plugin noop
+2025.04.11-14:47:00.13 - <debug> Registered op fpga_arraycopy from plugin noop
+2025.04.11-14:47:00.13 - <debug> Registered op fpga_vectoradd from plugin noop
+2025.04.11-14:47:00.13 - <debug> Registered op fpga_parallel from plugin noop
+2025.04.11-14:47:00.13 - <debug> Registered op fpga_mmult from plugin noop
+2025.04.11-14:47:00.13 - <debug> Registered op exec_with_resource from plugin noop
+2025.04.11-14:47:00.13 - <debug> Registered op torch_jitload_forward from plugin noop
+2025.04.11-14:47:00.13 - <debug> Registered op torch_sgemm from plugin noop
+2025.04.11-14:47:00.13 - <debug> Registered op opencv from plugin noop
+2025.04.11-14:47:00.13 - <debug> Registered op tflite_session_load from plugin noop
+2025.04.11-14:47:00.13 - <debug> Registered op tflite_session_run from plugin noop
+2025.04.11-14:47:00.13 - <debug> Registered op tflite_session_delete from plugin noop
+2025.04.11-14:47:00.13 - <debug> Loaded plugin noop from libvaccel-noop.so
+[2025-04-11T14:47:00Z INFO  ttrpc::sync::server] server listen started
+[2025-04-11T14:47:00Z INFO  ttrpc::sync::server] server started
+[2025-04-11T14:47:00Z INFO  vaccel_rpc_agent] vAccel RPC agent started
+[2025-04-11T14:47:00Z INFO  vaccel_rpc_agent] Listening on 'vsock://2:2048', press Ctrl+C to exit
+```
+
+There is a final step before running the application. The guest, the QEMU-based docker image with the pre-installed vAccel, also needs the RPC plugin to send commands to the host agent. On guest, download the pre-built RPC plugin and export the library.
+```
+wget https://s3.nbfc.io/nbfc-assets/github/vaccel/plugins/rpc/rev/main/x86_64/debug/vaccel-rpc-latest-bin.tar.gz
+tar xvf vaccel-rpc-latest-bin.tar.gz
+rm vaccel-rpc-*.tar.gz
+mv vaccel-rpc-* vaccel-rpc
+export VACCEL_PLUGINS=vaccel-rpc/usr/lib/x86_64-linux-gnu/libvaccel-rpc.so
+export VACCEL_RPC_ADDRESS="vsock://2:2048"
+```
+
+## Run an application on guest
+Now back to the guest, let's try one of the vAccel examples, for instance image classification: `classify`.
 This small program gets an image as an input and the number of 
 iterations and returns the classification tag for this image. We run the
 following:
@@ -237,7 +305,7 @@ Initialized session with id: 1
 classification tags: This is a dummy classification tag!
 ```
 
-While on host we see the following output:
+While on ssh-based host we see the following output:
 ```
 2025.03.24-13:26:37.24 - <debug> New rundir for session 1: /run/user/0/vaccel/x5HdKV
 2025.03.24-13:26:37.24 - <debug> Initialized session 1
@@ -253,5 +321,27 @@ While on host we see the following output:
 2025.03.24-13:26:37.24 - <debug> [noop] will return a dummy result
 2025.03.24-13:26:37.24 - <debug> [noop] will return a dummy result
 2025.03.24-13:26:37.24 - <debug> Released session 1
+
+```
+
+With the RPC-based host, the output shows only slight differences:
+```
+2025.04.11-14:48:38.02 - <debug> New rundir for session 1: /run/user/0/vaccel/4Eyvhe/session.1
+2025.04.11-14:48:38.02 - <debug> Initialized session 1
+[2025-04-11T14:48:38Z INFO  vaccel_rpc_agent::session] Created session 1
+[2025-04-11T14:48:38Z INFO  vaccel_rpc_agent::ops::genop] Genop session 1
+2025.04.11-14:48:38.02 - <debug> session:1 Looking for plugin implementing VACCEL_OP_IMAGE_CLASSIFY
+2025.04.11-14:48:38.02 - <debug> Returning func from hint plugin noop
+2025.04.11-14:48:38.02 - <debug> Found implementation in noop plugin
+2025.04.11-14:48:38.02 - <debug> [noop] Calling Image classification for session 1
+2025.04.11-14:48:38.02 - <debug> [noop] Dumping arguments for Image classification:
+2025.04.11-14:48:38.02 - <debug> [noop] model: (null)
+2025.04.11-14:48:38.02 - <debug> [noop] len_img: 79281
+2025.04.11-14:48:38.02 - <debug> [noop] len_out_text: 512
+2025.04.11-14:48:38.02 - <debug> [noop] len_out_imgname: 512
+2025.04.11-14:48:38.02 - <debug> [noop] will return a dummy result
+2025.04.11-14:48:38.02 - <debug> [noop] will return a dummy result
+2025.04.11-14:48:38.02 - <debug> Released session 1
+[2025-04-11T14:48:38Z INFO  vaccel_rpc_agent::session] Destroyed session 1
 
 ```
