@@ -2,8 +2,8 @@
 
 In the previous lab exercises we went through the essential steps to build
 ([lab1](https://github.com/nubificus/vaccel-tutorials/tree/main/lab1)), tailor
-([lab2](https://github.com/nubificus/vaccel-tutorials/tree/main/lab2)) and use
-([lab3](https://github.com/nubificus/vaccel-tutorials/tree/main/lab3)) the
+([lab2](https://github.com/nubificus/vaccel-tutorials/tree/main/lab2), [lab3](https://github.com/nubificus/vaccel-tutorials/tree/main/lab3)) and use
+([lab4](https://github.com/nubificus/vaccel-tutorials/tree/main/lab4)) the
 vAccel framework.
 
 In this lab, we go through the process of calling a vAccel operation in a
@@ -14,16 +14,8 @@ supports a number of ways to do this; in this lab we are going to use
 	1. vAccel's [rpc](https://github.com/nubificus/vaccel-plugin-rpc) plugin and
 	2. vAccel's [virtio](https://github.com/nubificus/vaccel-plugin-virtio) plugin.
 
-The `rpc` plugin used to send commands to a QEMU instance running on a remote server. We are using
-RPC within QEMU-emulated virtual machines for VM-to-host comminication.
-The `virtio` plugin requires support from the VMM. We have ported the necessary
-functionality to two popular VMMs: QEMU/KVM and AWS Firecracker.
-
-Lets go through the process of booting a Firecracker VM and use vAccel from the
-guest to do the simple vector add operation we saw in
-[lab4](https://github.com/nubificus/vaccel-tutorials/tree/main/lab4). We assume
-we've completed lab4 and we are in the [helper
-repo](https://github.com/nubificus/vaccel-tutorial-code) base directory.
+In this lab, the `rpc` plugin operates over a TCP socket and is used to send commands to a QEMU instance running on a remote server. This setup enables VM-to-host communication using RPC within QEMU-emulated virtual machine.
+The `virtio` plugin for vAccel implements VirtIO-based transport for vAccel operations using the `virtio-accel` kernel module. In this lab, we utilize a Docker image that includes pre-installed QEMU using an Ubuntu image with virtio-accel module, virtio-plugin and vAccel pre-installed. 
 
 # vAccel rpc plugin
 
@@ -164,7 +156,7 @@ Let's run the qemu docker image:
 
 ```
 cd ..
-sudo docker run  -it --privileged  --rm --mount type=bind,source="$(pwd)",destination=/data harbor.nbfc.io/nubificus/qemu-vaccel:x86_64 -r vm-artifacts/rootfs.img -k vm-artifacts/bzImage* --drive-cache -M pc --vcpus $(nproc) --cpu max -s qemu-$(date +"%Y%m%d-%H%M%S")
+sudo docker run  -it --privileged  --rm --mount type=bind,source="$(pwd)",destination=/data harbor.nbfc.io/nubificus/qemu-vaccel:x86_64 -r vm-artifacts/rootfs.img -k $(ls vm-artifacts/bzImage*) --drive-cache -M pc --vcpus $(nproc) --cpu max -s qemu-$(date +"%Y%m%d-%H%M%S")
 ```
 This creates a VM under a docker container with pre-installed QEMU.
 ```
