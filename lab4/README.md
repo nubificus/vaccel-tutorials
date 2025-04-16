@@ -10,7 +10,7 @@ actual implementation of certain functions and be more portable.
 Imagine an application that uses the `vaccel_image_classification` API to
 perform image inference. You can run this application on a machine with Nvidia
 GPU using the
-[jetson](https://github.com/cloudkernels/vaccelrt/tree/master/plugins/jetson_inference)
+[jetson](https://github.com/nubificus/vaccelrt-plugin-jetson)
 plugin of vAccel runtime. If, tomorrow, you want to use a different device for
 running the operation, you just execute the *same* application with a plugin
 for that device.
